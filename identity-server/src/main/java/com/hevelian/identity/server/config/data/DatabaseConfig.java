@@ -10,7 +10,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -24,14 +24,16 @@ public class DatabaseConfig {
 
     @Bean
     public EntityManagerFactory entityManagerFactory() {
-
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        EclipseLinkJpaVendorAdapter vendorAdapter = new EclipseLinkJpaVendorAdapter();
+        vendorAdapter.setShowSql(true);
         vendorAdapter.setGenerateDdl(true);
 
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setPackagesToScan("com.hevelian.identity");
         factory.setDataSource(dataSource());
+        // TODO Enable dynamic weaving for performance
+        factory.getJpaPropertyMap().put("eclipselink.weaving", "false");
         factory.afterPropertiesSet();
 
         return factory.getObject();

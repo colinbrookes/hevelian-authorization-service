@@ -5,17 +5,12 @@ import org.springframework.stereotype.Service;
 
 import com.hevelian.identity.entitlement.repository.PolicyRepository;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class PolicyService {
+    @Getter
     private final PolicyRepository policyRepository;
-
-    @Autowired
-    public PolicyService(PolicyRepository policyRepository) {
-        super();
-        this.policyRepository = policyRepository;
-    }
-
-    public PolicyRepository getPolicyRepository() {
-        return policyRepository;
-    }
 }

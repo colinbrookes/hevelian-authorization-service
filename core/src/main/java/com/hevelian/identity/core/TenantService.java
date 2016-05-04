@@ -6,17 +6,14 @@ import org.springframework.stereotype.Service;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.core.repository.TenantRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class TenantService {
     // TODO review the regexp
     public static final String DOMAIN_REGEXP = "\\w*\\.\\w*";
     private final TenantRepository tenantRepository;
-
-    @Autowired
-    public TenantService(TenantRepository tenantRepository) {
-        super();
-        this.tenantRepository = tenantRepository;
-    }
 
     // TODO throw exception if number of affected rows is not 1
     public void activateTenant(String tenantDomain) {

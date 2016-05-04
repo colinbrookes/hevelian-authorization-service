@@ -14,15 +14,13 @@ import com.hevelian.identity.core.api.dao.TenantDomainDTO;
 import com.hevelian.identity.core.api.dao.TenantRequestDTO;
 import com.hevelian.identity.core.model.Tenant;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping(path = "/TenantService")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class TenantController {
     private final TenantService tenantService;
-
-    @Autowired
-    public TenantController(TenantService tenantService) {
-        this.tenantService = tenantService;
-    }
 
     @RequestMapping(path = "/activateTenant", method = RequestMethod.POST)
     public void activateTenant(@Valid @RequestBody TenantDomainDTO tenantDomainDTO) {

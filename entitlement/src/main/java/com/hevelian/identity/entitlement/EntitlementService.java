@@ -2,8 +2,6 @@ package com.hevelian.identity.entitlement;
 
 import java.util.Iterator;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wso2.balana.ParsingException;
@@ -12,21 +10,19 @@ import org.wso2.balana.ctx.ResponseCtx;
 
 import com.hevelian.identity.entitlement.pdp.EntitlementEngine;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@Log4j2
 public class EntitlementService {
-    private static final Logger LOG = LogManager.getLogger(EntitlementService.class);
-
     private final EntitlementEngine entitlementEngine;
-
-    @Autowired
-    public EntitlementService(EntitlementEngine entitlementEngine) {
-        this.entitlementEngine = entitlementEngine;
-    }
 
     public String getDecision(String request) throws ParsingException {
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("XACML Request:\n" + request);
+        if (log.isDebugEnabled()) {
+            log.debug("XACML Request:\n" + request);
         }
         String response = entitlementEngine.evaluate(request);
         logResponse(response);
@@ -53,22 +49,17 @@ public class EntitlementService {
 
     private void logAttributeRequest(String subject, String resource, String action,
             String environment) {
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder("XACML Request Attributes:\n").append("Subject: ")
                     .append(subject).append("\nResource: ").append(resource).append("\nAction: ")
                     .append(action).append("\nEnvironment: ").append(environment);
-            LOG.debug(sb.toString());
+            log.debug(sb.toString());
         }
     }
 
     private void logResponse(String response) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("XACML Response:\n" + response);
+        if (log.isDebugEnabled()) {
+            log.debug("XACML Response:\n" + response);
         }
     }
-
-    public EntitlementEngine getEntitlementEngine() {
-        return entitlementEngine;
-    }
-
 }

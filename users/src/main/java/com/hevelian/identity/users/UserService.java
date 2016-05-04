@@ -8,17 +8,13 @@ import com.hevelian.identity.users.model.User;
 import com.hevelian.identity.users.repository.RoleRepository;
 import com.hevelian.identity.users.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-
-    @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
-        super();
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-    }
 
     public void addRole(Role role) {
         roleRepository.save(role);

@@ -13,15 +13,13 @@ import com.hevelian.identity.entitlement.PolicyService;
 import com.hevelian.identity.entitlement.model.Policy;
 import com.hevelian.identity.entitlement.model.PolicyType;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping(path = "/PolicyService")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class PolicyController {
     private final PolicyService policyService;
-
-    @Autowired
-    public PolicyController(PolicyService policyService) {
-        this.policyService = policyService;
-    }
 
     @RequestMapping(path = "/testAddPolicy", method = RequestMethod.GET)
     public void testAddPolicy() {
@@ -34,15 +32,12 @@ public class PolicyController {
 
     @RequestMapping(path = "/testCount", method = RequestMethod.GET)
     public PrimitiveResult<String> testCount() {
-        return new PrimitiveResult<String>(String.valueOf(policyService.getPolicyRepository().count()));
+        return new PrimitiveResult<String>(
+                String.valueOf(policyService.getPolicyRepository().count()));
     }
 
     @RequestMapping(path = "/testGetAll", method = RequestMethod.GET)
     public Policy[] testGetAll() {
         return Iterables.toArray(policyService.getPolicyRepository().findAll(), Policy.class);
-    }
-
-    public PolicyService getPolicyService() {
-        return policyService;
     }
 }

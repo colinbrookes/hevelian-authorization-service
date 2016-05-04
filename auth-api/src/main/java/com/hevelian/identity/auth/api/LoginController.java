@@ -21,11 +21,13 @@ import com.hevelian.identity.auth.api.dto.LoginDTO;
 import com.hevelian.identity.core.api.PrimitiveResult;
 import com.hevelian.identity.core.exc.NotImplementedException;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping(path = "/LoginService")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class LoginController {
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     public PrimitiveResult<Boolean> login(@Valid @RequestBody LoginDTO loginDTO) {

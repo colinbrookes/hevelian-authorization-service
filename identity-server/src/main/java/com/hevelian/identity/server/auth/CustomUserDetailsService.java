@@ -15,10 +15,12 @@ import com.hevelian.identity.users.UserService;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
 
+import lombok.RequiredArgsConstructor;
+
 @Service("userDetailsService")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class CustomUserDetailsService implements UserDetailsService {
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

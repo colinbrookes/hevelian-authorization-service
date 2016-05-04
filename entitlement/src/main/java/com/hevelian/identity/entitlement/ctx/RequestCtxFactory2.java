@@ -13,14 +13,15 @@ import org.wso2.balana.ctx.xacml3.RequestCtx;
 import org.wso2.balana.utils.Constants.PolicyConstants;
 import org.wso2.balana.xacml3.Attributes;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestCtxFactory2 {
     /**
      * Instance of this class
      */
     private static volatile RequestCtxFactory2 factoryInstance;
-
-    private RequestCtxFactory2() {
-    }
 
     public static RequestCtxFactory2 getFactory() {
         if (factoryInstance == null) {

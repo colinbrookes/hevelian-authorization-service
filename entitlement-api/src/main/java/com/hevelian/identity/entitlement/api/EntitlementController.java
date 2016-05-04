@@ -14,15 +14,13 @@ import com.hevelian.identity.entitlement.EntitlementService;
 import com.hevelian.identity.entitlement.api.dto.EntitlementAttributesDTO;
 import com.hevelian.identity.entitlement.api.dto.EntitlementRequestDTO;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping(path = "/EntitlementService")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class EntitlementController {
     private final EntitlementService entitlementService;
-
-    @Autowired
-    public EntitlementController(EntitlementService entitlementService) {
-        this.entitlementService = entitlementService;
-    }
 
     @RequestMapping(path = "/getDecision", method = RequestMethod.POST)
     public PrimitiveResult<String> getDecision(@Valid @RequestBody EntitlementRequestDTO request)

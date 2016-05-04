@@ -5,7 +5,12 @@ import javax.persistence.Entity;
 
 import com.hevelian.identity.core.model.AbstractEntity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
+@Getter
+@Setter
 public class Policy extends AbstractEntity {
     @Column(nullable = false)
     private String content;
@@ -13,32 +18,4 @@ public class Policy extends AbstractEntity {
     private String policyId;
     @Column(nullable = false)
     private PolicyType policyType;
-
-    public Policy() {
-        super();
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getPolicyId() {
-        return policyId;
-    }
-
-    public void setPolicyId(String policyId) {
-        this.policyId = policyId;
-    }
-
-    public PolicyType getPolicyType() {
-        return policyType;
-    }
-
-    public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
-    }
 }

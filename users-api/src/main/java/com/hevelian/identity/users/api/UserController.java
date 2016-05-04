@@ -11,15 +11,13 @@ import com.hevelian.identity.users.UserService;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping(path = "/UserService")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class UserController {
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @RequestMapping(path = "/addRemoveRolesOfUser", method = RequestMethod.POST)
     public void addRemoveRolesOfUser(String userName, String[] newRoles, String[] removedRoles) {

@@ -93,23 +93,8 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok-maven-plugin</artifactId>
-				<version>1.16.6.1</version>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>delombok</goal>
-						</goals>
-						<configuration>
-							<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
+		<!-- To enable Maven Lombok plugin with proper javadoc - see http://stackoverflow.com/a/11930955 -->
 	</build>
 
 	<modules>

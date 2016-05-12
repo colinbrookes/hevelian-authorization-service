@@ -8,27 +8,39 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfFilter;
 
 import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
+import com.hevelian.identity.server.auth.providers.RootAdminAuthenticationProvider;
+import com.hevelian.identity.server.auth.providers.UserAuthenticationProvider;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
-    private UserDetailsService userDetailsService;
+    private RootAdminAuthenticationProvider rootAdminAuthenticationProvider;
+
+    @Autowired
+    private UserAuthenticationProvider userAuthenticationProvider;
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        // auth.inMemoryAuthentication().withUser("admin").password("admin").roles("ROOT_ADMIN");
-        auth.userDetailsService(userDetailsService);
+        auth.authenticationProvider(userAuthenticationProvider);
+        auth.authenticationProvider(rootAdminAuthenticationProvider);
     }
 
     @Bean(name = "authenticationManager")
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+    
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+            PasswordEncoder encoder = new BCryptPasswordEncoder();
+            return encoder;
     }
 
     @Override

@@ -1,7 +1,10 @@
 package com.hevelian.identity.server.config;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
 
+import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 import com.hevelian.identity.server.config.rest.RestContextConfig;
@@ -22,11 +25,19 @@ public class WebInitializer extends AbstractAnnotationConfigDispatcherServletIni
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[] { APIServletConfig.class, RestContextConfig.class};
+        return new Class[] { APIServletConfig.class, RestContextConfig.class };
     }
 
     @Override
     protected String[] getServletMappings() {
         return new String[] { "/api/*" };
+    }
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        // Register RequestContextListener to be able to access Session outside
+        // DispatcherServlet.
+        servletContext.addListener(new RequestContextListener());
+        super.onStartup(servletContext);
     }
 }

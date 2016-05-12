@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Iterables;
 import com.hevelian.identity.core.TenantService;
-import com.hevelian.identity.core.api.dao.TenantDomainDTO;
-import com.hevelian.identity.core.api.dao.TenantRequestDTO;
+import com.hevelian.identity.core.api.dto.TenantDomainDTO;
+import com.hevelian.identity.core.api.dto.TenantRequestDTO;
 import com.hevelian.identity.core.model.Tenant;
 
 import lombok.RequiredArgsConstructor;

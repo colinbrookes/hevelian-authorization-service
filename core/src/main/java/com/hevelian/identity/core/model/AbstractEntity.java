@@ -8,10 +8,11 @@ import javax.persistence.MappedSuperclass;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.EqualsAndHashCode;
-
+import lombok.Getter;
 
 @MappedSuperclass
 @EqualsAndHashCode
+@Getter
 public class AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

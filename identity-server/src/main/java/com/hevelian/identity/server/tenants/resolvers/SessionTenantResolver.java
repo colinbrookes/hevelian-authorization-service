@@ -5,6 +5,6 @@ import com.hevelian.identity.server.tenants.TenantUtil;
 public class SessionTenantResolver implements CurrentTenantResolver<Long> {
     @Override
     public Long getCurrentTenantId() {
-        return (Long) TenantUtil.getCurrentTenantId();
+        return TenantUtil.getCurrentTenantId();
     }
 }

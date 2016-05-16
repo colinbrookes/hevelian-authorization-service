@@ -15,8 +15,7 @@ import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.hevelian.identity.server.tenants.jpa.RootAdminTenantAwareJpaTransactionManager;
-import com.hevelian.identity.server.tenants.jpa.TenantAwareJpaTransactionManager;
-import com.hevelian.identity.server.tenants.resolvers.CurrentTenantResolver;
+import com.hevelian.identity.server.tenants.resolvers.RootAdminTenantResolver;
 import com.hevelian.identity.server.tenants.resolvers.SessionTenantResolver;
 
 @Configuration
@@ -48,16 +47,11 @@ public class DatabaseConfig {
     @Bean
     public PlatformTransactionManager transactionManager(
             EntityManagerFactory entityManagerFactory) {
-        TenantAwareJpaTransactionManager txManager = new RootAdminTenantAwareJpaTransactionManager();
-        txManager.setTenantResolver(currentTenantResolver());
+        RootAdminTenantAwareJpaTransactionManager txManager = new RootAdminTenantAwareJpaTransactionManager();
+        txManager.setTenantResolver(new SessionTenantResolver());
+        txManager.setRootAdminTenantResolver(new RootAdminTenantResolver());
         txManager.setMultitenantProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT);
         txManager.setEntityManagerFactory(entityManagerFactory);
         return txManager;
     }
-
-    @Bean
-    public CurrentTenantResolver<Long> currentTenantResolver() {
-        return new SessionTenantResolver();
-    }
-
 }

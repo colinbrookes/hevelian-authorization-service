@@ -13,6 +13,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.hevelian.identity.server.tenants.jpa.RootAdminTenantAwareJpaTransactionManager;
 import com.hevelian.identity.server.tenants.resolvers.RootAdminTenantResolver;
@@ -20,6 +21,7 @@ import com.hevelian.identity.server.tenants.resolvers.SessionTenantResolver;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.hevelian.identity")
+@EnableTransactionManagement
 public class DatabaseConfig {
     @Bean
     public DataSource dataSource() {

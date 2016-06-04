@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.hevelian.identity.core.TenantService;
+import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.server.auth.UsernameParser;
 import com.hevelian.identity.server.tenants.TenantUtil;
@@ -41,12 +42,14 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
         log.debug("Attempting to authenticate user '0'.", username);
 
         String tenantDomain = usernameParser.getTenant(username);
-        Tenant tenant = tenantService.getTenant(tenantDomain);
-
-        if (tenant == null) {
+        Tenant tenant;
+        try {
+            tenant = tenantService.getTenant(tenantDomain);
+        } catch (TenantNotFoundByDomainException e) {
             log.debug("Tenant '{0}' not found for username '{1}'.", tenantDomain, username);
             throw new BadCredentialsException("Bad Credentials");
         }
+
         TenantUtil.setCurrentTenantId(tenant.getId());
 
         com.hevelian.identity.users.model.User user = userService

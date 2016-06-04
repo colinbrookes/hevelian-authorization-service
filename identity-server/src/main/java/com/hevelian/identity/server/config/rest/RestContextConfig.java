@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExc
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.wso2.balana.ParsingException;
 
+import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+
 import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;
 
 @Configuration
@@ -58,6 +60,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
                 // box by the lib. This functionality will be revisited again
                 // when we feel the need.
                 .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
+                .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
                 // Add custom response for 500 error
                 .addErrorMessageHandler(Exception.class, HttpStatus.INTERNAL_SERVER_ERROR).build();
     }

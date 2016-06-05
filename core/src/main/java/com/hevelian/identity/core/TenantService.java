@@ -1,6 +1,7 @@
 package com.hevelian.identity.core;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 // Manage all transactions in service layer, where business logic occurs.
 @Transactional(readOnly = true)
+@Secured(value = SystemRoles.SUPER_ADMIN)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class TenantService {
     // TODO review the regexp

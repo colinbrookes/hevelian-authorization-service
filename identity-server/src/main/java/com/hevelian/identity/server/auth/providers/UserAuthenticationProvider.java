@@ -13,15 +13,17 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.hevelian.identity.core.TenantService;
-import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.model.Tenant;
+import com.hevelian.identity.core.repository.TenantRepository;
 import com.hevelian.identity.server.auth.UsernameParser;
 import com.hevelian.identity.server.tenants.TenantUtil;
 import com.hevelian.identity.users.UserService;
 import com.hevelian.identity.users.model.Role;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Component
@@ -32,7 +34,7 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
     @Autowired
     private UserService userService;
     @Autowired
-    private TenantService tenantService;
+    private AuthTenantService authTenantService;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -42,10 +44,8 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
         log.debug("Attempting to authenticate user '0'.", username);
 
         String tenantDomain = usernameParser.getTenant(username);
-        Tenant tenant;
-        try {
-            tenant = tenantService.getTenant(tenantDomain);
-        } catch (TenantNotFoundByDomainException e) {
+        Tenant tenant = authTenantService.getTenant(tenantDomain);
+        if (tenant == null) {
             log.debug("Tenant '{0}' not found for username '{1}'.", tenantDomain, username);
             throw new BadCredentialsException("Bad Credentials");
         }
@@ -74,5 +74,16 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
     @Override
     protected boolean supports(String username, String password) {
         return usernameParser.getTenant(username) != null;
+    }
+}
+
+@Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+class AuthTenantService {
+    private final TenantRepository tenantRepository;
+
+    @Transactional(readOnly = true)
+    public Tenant getTenant(String tenantDomain) {
+        return tenantRepository.findByDomain(tenantDomain);
     }
 }

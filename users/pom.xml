@@ -8,10 +8,6 @@
 	<name>${product.name} - Users Module</name>
 	<dependencies>
 		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>persistence-api</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.hevelian.identity</groupId>
 			<artifactId>core</artifactId>
 			<version>${project.version}</version>

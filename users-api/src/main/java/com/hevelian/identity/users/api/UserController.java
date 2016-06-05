@@ -9,7 +9,7 @@ import com.google.common.collect.Iterables;
 import com.hevelian.identity.core.exc.NotImplementedException;
 import com.hevelian.identity.users.UserService;
 import com.hevelian.identity.users.model.Role;
-import com.hevelian.identity.users.model.User;
+import com.hevelian.identity.users.model.PrimaryUser;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @RequestMapping(path = "/addUser", method = RequestMethod.POST)
-    public void addRole(User user) {
+    public void addRole(PrimaryUser user) {
         userService.addUser(user);
     }
 
@@ -64,8 +64,8 @@ public class UserController {
     }
 
     @RequestMapping(path = "/listUsers", method = RequestMethod.GET)
-    public User[] listUsers() {
-        return Iterables.toArray(userService.findAllUsers(), User.class);
+    public PrimaryUser[] listUsers() {
+        return Iterables.toArray(userService.findAllUsers(), PrimaryUser.class);
     }
 
     @RequestMapping(path = "/getRolesOfUser", method = RequestMethod.GET)

@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hevelian.identity.core.model.Tenant;
@@ -21,7 +22,10 @@ import com.hevelian.identity.core.repository.TenantRepository;
 import com.hevelian.identity.server.auth.UsernameParser;
 import com.hevelian.identity.server.tenants.TenantUtil;
 import com.hevelian.identity.users.UserService;
+import com.hevelian.identity.users.model.PrimaryUser;
 import com.hevelian.identity.users.model.Role;
+import com.hevelian.identity.users.repository.PrimaryUserRepository;
+import com.hevelian.identity.users.repository.RoleRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -32,9 +36,9 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
     @Autowired
     private UsernameParser usernameParser;
     @Autowired
-    private UserService userService;
-    @Autowired
     private AuthTenantService authTenantService;
+    @Autowired
+    private AuthUserService authUserService;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -52,7 +56,7 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
 
         TenantUtil.setCurrentTenantId(tenant.getId());
 
-        com.hevelian.identity.users.model.User user = userService
+        com.hevelian.identity.users.model.PrimaryUser user = authUserService
                 .getUser(usernameParser.getUser(username));
         if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
             log.debug("User '{0}' not found or credentials invalid.", username);
@@ -85,5 +89,21 @@ class AuthTenantService {
     @Transactional(readOnly = true)
     public Tenant getTenant(String tenantDomain) {
         return tenantRepository.findByDomain(tenantDomain);
+    }
+}
+
+@Service
+class AuthUserService extends UserService {
+    @Autowired
+    public AuthUserService(PrimaryUserRepository userRepository, RoleRepository roleRepository) {
+        super(userRepository, roleRepository);
+    }
+
+    // We need propagation REQUIRES_NEW to make persistence manager reload the
+    // new tenant id.
+    @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+    public PrimaryUser getUser(String userName) {
+        return super.getUser(userName);
     }
 }

@@ -53,18 +53,6 @@
 			<artifactId>woodstox-core-asl</artifactId>
 			<version>4.4.1</version>
 		</dependency>
-		<!-- JPA Provider (EclipseLink) -->
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>eclipselink</artifactId>
-			<version>2.6.2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.persistence</groupId>
-					<artifactId>commonj.sdo</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 
 		<!-- Bean Validation -->
 		<dependency>

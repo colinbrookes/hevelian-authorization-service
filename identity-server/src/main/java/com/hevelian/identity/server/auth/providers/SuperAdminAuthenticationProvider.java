@@ -33,8 +33,6 @@ public class SuperAdminAuthenticationProvider extends AuthenticationProviderBase
                 // TODO encrypt password, move to some store
                 && "admin".equals(password)) {
             List<GrantedAuthority> grantedAuths = new ArrayList<>();
-            // TODO make the ability to specify the role name through
-            // configuration. No hardcode.
             grantedAuths.add(new SimpleGrantedAuthority(SystemRoles.SUPER_ADMIN));
             User user = new User(username, password, grantedAuths);
             user.eraseCredentials();

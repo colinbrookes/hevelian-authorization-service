@@ -5,26 +5,26 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.persistence.annotations.Multitenant;
 
-import lombok.EqualsAndHashCode;
+import com.hevelian.identity.core.model.UserCredentials;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Multitenant
 @Getter
 @Setter
-@EqualsAndHashCode(of = "name")
-public class User {
+public class PrimaryUser extends UserCredentials {
     @Id
-    private String name;
-
-    @Column(nullable = false)
-    @Setter(onMethod = @__({ @JsonIgnore }) )
-    private String password;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     @Column(nullable = false)
     private Boolean enabled;
@@ -33,4 +33,5 @@ public class User {
     // Repository layer, but we will never use users alone.
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;
+
 }

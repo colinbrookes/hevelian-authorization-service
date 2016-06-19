@@ -1,10 +1,18 @@
 package com.hevelian.identity.users.repository;
 
+import java.util.Set;
+
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.hevelian.identity.users.model.Role;
 
 public interface RoleRepository extends PagingAndSortingRepository<Role, Long> {
 
-    void deleteByName(String roleName);
+    int deleteByName(String roleName);
+
+    // Need to use the custom Query instead. See:
+    // https://bugs.eclipse.org/bugs/show_bug.cgi?id=349477
+    @Query("select r from Role r  where r.name in ?1")
+    Set<Role> findByNameIsIn(Set<String> roleNames);
 }

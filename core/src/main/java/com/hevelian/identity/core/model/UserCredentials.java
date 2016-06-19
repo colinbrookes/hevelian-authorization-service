@@ -5,7 +5,8 @@ import javax.persistence.MappedSuperclass;
 
 import org.eclipse.persistence.annotations.Index;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,6 +23,6 @@ public class UserCredentials {
 
     @Column(nullable = false)
     // Ignore password in case the entity is used as a dto
-    @Getter(onMethod = @__(@JsonIgnore) )
+    @JsonProperty(access = Access.WRITE_ONLY)
     private String password;
 }

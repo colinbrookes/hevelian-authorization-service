@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.wso2.balana.ParsingException;
 
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
 
 import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;
 
@@ -62,6 +63,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
                 // when we feel the need.
                 .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
                 .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
+                .addErrorMessageHandler(RolesNotFoundByNameException.class, HttpStatus.NOT_FOUND)
                 .addErrorMessageHandler(AccessDeniedException.class, HttpStatus.FORBIDDEN)
                 // Add custom response for 500 error
                 .addErrorMessageHandler(Exception.class, HttpStatus.INTERNAL_SERVER_ERROR).build();

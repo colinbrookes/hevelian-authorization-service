@@ -4,6 +4,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
 
+import org.h2.server.web.WebServlet;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -31,6 +32,17 @@ public class WebInitializer extends AbstractAnnotationConfigDispatcherServletIni
     @Override
     protected String[] getServletMappings() {
         return new String[] { "/api/*" };
+    }
+
+    @Override
+    protected void registerDispatcherServlet(ServletContext servletContext) {
+        super.registerDispatcherServlet(servletContext);
+
+        // Embedded database console
+        // TODO possibly add it only when development profile is active.
+        Dynamic h2Servlet = servletContext.addServlet("h2Servlet", new WebServlet());
+        h2Servlet.addMapping("/console/*");
+        h2Servlet.setInitParameter("webAllowOthers", "true");
     }
 
     @Override

@@ -7,12 +7,12 @@ import javax.persistence.MappedSuperclass;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @MappedSuperclass
-@EqualsAndHashCode
 @Getter
+// Do not use id for hashcode/equals. Use natural fields instead. See:
+// http://www.onjava.com/pub/a/onjava/2006/09/13/dont-let-hibernate-steal-your-identity.html?page=1
 public class AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

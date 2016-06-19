@@ -38,8 +38,8 @@ public class TenantService {
     }
 
     @Transactional
-    public String addTenant(Tenant tenant) {
-        return tenantRepository.save(tenant).getDomain();
+    public Tenant addTenant(Tenant tenant) {
+        return tenantRepository.save(tenant);
     }
 
     @Transactional
@@ -59,14 +59,14 @@ public class TenantService {
     }
 
     @Transactional
-    public void updateTenant(Tenant tenant) throws TenantNotFoundByDomainException {
+    public Tenant updateTenant(Tenant tenant) throws TenantNotFoundByDomainException {
         Tenant tenantEntity = getTenant(tenant.getDomain());
         tenantEntity.setActive(tenant.getActive());
         tenantEntity.getTenantAdmin().setName(tenant.getTenantAdmin().getName());
         if (tenant.getTenantAdmin().getPassword() != null) {
             tenantEntity.getTenantAdmin().setPassword(tenant.getTenantAdmin().getPassword());
         }
-        tenantRepository.save(tenantEntity);
+        return tenantRepository.save(tenantEntity);
     }
 
     public Iterable<Tenant> getAllTenants() {

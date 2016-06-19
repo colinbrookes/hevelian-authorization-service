@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfFilter;
 
 import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
+import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.server.auth.providers.SuperAdminAuthenticationProvider;
 import com.hevelian.identity.server.auth.providers.UserAuthenticationProvider;
 
@@ -48,16 +49,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // Check whether it is possible to set login URL to Spring directly.
-        final String loginURL = "/api/LoginService/login";
         http.authorizeRequests()
-                .antMatchers(loginURL, "/api/v2/api-docs", "/api/swagger-ui.html",
+                .antMatchers("/api/LoginService/login", "/api/v2/api-docs", "/api/swagger-ui.html",
                         "/api/webjars/**", "/api/swagger-resources", "/api/configuration/ui",
                         "/api/configuration/security")
-                .permitAll().anyRequest().authenticated().and().httpBasic();
+                .permitAll().antMatchers("/console/*").hasAuthority(SystemRoles.SUPER_ADMIN)
+                .anyRequest().authenticated().and().httpBasic();
 
         // Disable scrf as there is not a high chance somebody will call
         // endpoint through the browser directly.
         http.csrf().disable();
+        // Configure X-Frame-Options. H2 console needs this. RESTful API does
+        // not.
+        http.headers().frameOptions().sameOrigin();
         // TODO possibly turn on csrf per configuration
         // turnOnCsrf(http, loginURL);
     }

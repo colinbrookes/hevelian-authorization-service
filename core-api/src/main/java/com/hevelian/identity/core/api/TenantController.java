@@ -44,7 +44,7 @@ public class TenantController {
             @Validated(value = NewTenantGroup.class) @RequestBody TenantRequestDTO tenant) {
         tenant.getTenantAdmin()
                 .setPassword(passwordEncoder.encode(tenant.getTenantAdmin().getPassword()));
-        return new PrimitiveResult<String>(tenantService.addTenant(tenant.toEntity()));
+        return new PrimitiveResult<String>(tenantService.addTenant(tenant.toEntity()).getDomain());
     }
 
     @RequestMapping(path = "/updateTenant", method = RequestMethod.POST)

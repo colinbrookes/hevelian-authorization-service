@@ -17,15 +17,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.core.repository.TenantRepository;
 import com.hevelian.identity.server.auth.UsernameParser;
 import com.hevelian.identity.server.tenants.TenantUtil;
 import com.hevelian.identity.users.UserService;
-import com.hevelian.identity.users.model.PrimaryUser;
+import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
 import com.hevelian.identity.users.model.Role;
-import com.hevelian.identity.users.repository.PrimaryUserRepository;
 import com.hevelian.identity.users.repository.RoleRepository;
+import com.hevelian.identity.users.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -43,12 +44,15 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
     private PasswordEncoder passwordEncoder;
 
     @Override
+    // TODO refactor
+    // TODO fix the bug with unique constraint
     protected Authentication authenticate(String username, String password)
             throws AuthenticationException {
         log.debug("Attempting to authenticate user '0'.", username);
 
         String tenantDomain = usernameParser.getTenant(username);
         Tenant tenant = authTenantService.getTenant(tenantDomain);
+        String usernameStripped = usernameParser.getUser(username);
         if (tenant == null) {
             log.debug("Tenant '{0}' not found for username '{1}'.", tenantDomain, username);
             throw new BadCredentialsException("Bad Credentials");
@@ -56,20 +60,31 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
 
         TenantUtil.setCurrentTenantId(tenant.getId());
 
-        com.hevelian.identity.users.model.PrimaryUser user = authUserService
-                .getUser(usernameParser.getUser(username));
-        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
-            log.debug("User '{0}' not found or credentials invalid.", username);
-            throw new BadCredentialsException("Bad Credentials");
-        }
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-        for (Role role : user.getRoles()) {
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
+
+        if (tenant.getTenantAdmin().getName().equals(usernameStripped)
+                && passwordEncoder.matches(password, tenant.getTenantAdmin().getPassword())) {
+            authorities.add(new SimpleGrantedAuthority(SystemRoles.TENANT_ADMIN));
+        } else {
+            try {
+                com.hevelian.identity.users.model.User user = authUserService
+                        .getUser(usernameStripped);
+                if (!passwordEncoder.matches(password, user.getPassword())) {
+                    log.debug("User '{0}' not found or credentials invalid.", username);
+                    throw new BadCredentialsException("Bad Credentials");
+                }
+                for (Role role : user.getRoles()) {
+                    authorities.add(new SimpleGrantedAuthority(role.getName()));
+                }
+            } catch (UserNotFoundByNameException e) {
+                log.debug("User '{0}' not found or credentials invalid.", username);
+                throw new BadCredentialsException("Bad Credentials");
+            }
         }
 
         log.debug("Authentication of user completed successfully for username '0'.", username);
 
-        User userDetails = new User(username, password, authorities);
+        User userDetails = new User(usernameStripped, password, authorities);
         userDetails.eraseCredentials();
         return new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(),
                 userDetails.getAuthorities());
@@ -95,7 +110,7 @@ class AuthTenantService {
 @Service
 class AuthUserService extends UserService {
     @Autowired
-    public AuthUserService(PrimaryUserRepository userRepository, RoleRepository roleRepository) {
+    public AuthUserService(UserRepository userRepository, RoleRepository roleRepository) {
         super(userRepository, roleRepository);
     }
 
@@ -103,7 +118,8 @@ class AuthUserService extends UserService {
     // new tenant id.
     @Override
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    public PrimaryUser getUser(String userName) {
+    public com.hevelian.identity.users.model.User getUser(String userName)
+            throws UserNotFoundByNameException {
         return super.getUser(userName);
     }
 }

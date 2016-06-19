@@ -16,8 +16,11 @@ import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
 import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
 import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
 import com.hevelian.identity.users.api.dto.AddRemoveUserRolesRequestDTO;
+import com.hevelian.identity.users.api.dto.AddRemoveUsersOfRoleRequestDTO;
 import com.hevelian.identity.users.api.dto.NewUserRequestDTO;
 import com.hevelian.identity.users.api.dto.RoleRequestDTO;
+import com.hevelian.identity.users.api.dto.UpdateRoleNameRequestDTO;
+import com.hevelian.identity.users.api.dto.UpdateUserRolesRequestDTO;
 import com.hevelian.identity.users.api.dto.UserCredentialsRequestDTO;
 import com.hevelian.identity.users.api.dto.UserNameRequestDTO;
 import com.hevelian.identity.users.model.Role;
@@ -42,10 +45,11 @@ public class UserController {
     }
 
     @RequestMapping(path = "/addRemoveUsersOfRole", method = RequestMethod.POST)
-    public void addRemoveUsersOfRole(String roleName, String[] newUserNames,
-            String[] removedUserNames) {
-        // TODO implement.
-        throw new NotImplementedException();
+    public void addRemoveUsersOfRole(
+            @Valid @RequestBody AddRemoveUsersOfRoleRequestDTO addRemoveUsersOfRoleRequest) {
+        userService.addRemoveUsersOfRole(addRemoveUsersOfRoleRequest.getName(),
+                addRemoveUsersOfRoleRequest.getNewUserNames(),
+                addRemoveUsersOfRoleRequest.getRemovedUserNames());
     }
 
     @RequestMapping(path = "/addRole", method = RequestMethod.POST)
@@ -102,15 +106,18 @@ public class UserController {
     }
 
     @RequestMapping(path = "/updateRoleName", method = RequestMethod.POST)
-    public Role[] updateRoleName(String roleName, String newRoleName) {
-        // TODO to implement.
-        throw new NotImplementedException();
+    public void updateRoleName(@Valid @RequestBody UpdateRoleNameRequestDTO updateRoleNameRequest)
+            throws RoleNotFoundByNameException {
+        userService.updateRoleName(updateRoleNameRequest.getName(),
+                updateRoleNameRequest.getNewName());
     }
 
     @RequestMapping(path = "/updateRolesOfUser", method = RequestMethod.POST)
-    public void updateRolesOfUser(String userName, String[] newRoles) {
-        // TODO implement.
-        throw new NotImplementedException();
+    public void updateRolesOfUser(
+            @Valid @RequestBody UpdateUserRolesRequestDTO updateUserRolesRequest)
+                    throws RolesNotFoundByNameException, UserNotFoundByNameException {
+        userService.updateRolesOfUser(updateUserRolesRequest.getName(),
+                updateUserRolesRequest.getNewRoles());
     }
 
     @RequestMapping(path = "/updateUsersOfRole", method = RequestMethod.POST)

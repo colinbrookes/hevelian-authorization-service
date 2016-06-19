@@ -9,7 +9,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AddRemoveUserRolesRequestDTO extends UpdateUserRolesRequestDTO {
+public class AddRemoveUsersOfRoleRequestDTO extends RoleRequestDTO {
     @NotNull
-    private Set<String> removedRoles;
+    private Set<String> newUserNames;
+    @NotNull
+    private Set<String> removedUserNames;
 }

@@ -13,6 +13,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
+import com.hevelian.identity.core.exc.NotImplementedException;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
 import com.hevelian.identity.users.repository.RoleRepository;
@@ -61,6 +62,12 @@ public class UserService {
         }
         user.getRoles().addAll(newRoles);
         userRepository.save(user);
+    }
+
+    public void addRemoveUsersOfRole(String name, Set<String> newUserNames,
+            Set<String> removedUserNames) {
+        // TODO to implement.
+        throw new NotImplementedException();
     }
 
     @Transactional(readOnly = false)
@@ -123,6 +130,31 @@ public class UserService {
     // TODO throw an exception if role does not exist
     public Iterable<User> getUsersOfRole(Role role) {
         return userRepository.findByRoles_Name(role.getName());
+    }
+
+    public void updateRoleName(String roleName, String newRoleName)
+            throws RoleNotFoundByNameException {
+        int affectedRows = roleRepository.updateName(roleName, newRoleName);
+        if (affectedRows == 0) {
+            throw new RoleNotFoundByNameException(roleName);
+        }
+    }
+
+    public void updateRolesOfUser(String userName, Set<String> newRoleNames)
+            throws RolesNotFoundByNameException, UserNotFoundByNameException {
+        User user = userRepository.findOneByName(userName);
+        if (user == null) {
+            throw new UserNotFoundByNameException(userName);
+        }
+
+        Set<Role> newRoles = roleRepository.findByNameIsIn(newRoleNames);
+        if (newRoleNames.size() != newRoles.size()) {
+            throw new RolesNotFoundByNameException(Sets.difference(newRoleNames,
+                    newRoles.stream().map(r -> r.getName()).collect(Collectors.toSet())));
+        }
+        user.getRoles().clear();
+        user.getRoles().addAll(newRoles);
+        userRepository.save(user);
     }
 
     public static class RoleNotFoundByNameException extends EntityNotFoundByCriteriaException {

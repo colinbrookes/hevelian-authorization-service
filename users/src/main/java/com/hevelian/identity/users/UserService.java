@@ -4,12 +4,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
@@ -21,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 // Manage all transactions in service layer, where business logic occurs.
 @Transactional(readOnly = true)
-// @Secured(value = SystemRoles.TENANT_ADMIN)
+@Secured(value = SystemRoles.TENANT_ADMIN)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired) )
 public class UserService {
     private final UserRepository userRepository;

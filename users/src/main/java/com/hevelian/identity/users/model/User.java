@@ -2,6 +2,7 @@ package com.hevelian.identity.users.model;
 
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,6 +22,7 @@ import lombok.Setter;
 
 @Entity
 @Multitenant
+@AttributeOverride(column = @Column(nullable = false, unique = true) , name = "name")
 @Getter
 @Setter
 public class User extends UserCredentials {

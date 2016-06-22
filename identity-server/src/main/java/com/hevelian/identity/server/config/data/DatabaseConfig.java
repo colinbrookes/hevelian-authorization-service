@@ -5,7 +5,6 @@ import javax.sql.DataSource;
 
 import org.eclipse.persistence.config.EntityManagerProperties;
 import org.eclipse.persistence.config.PersistenceUnitProperties;
-import org.eclipse.persistence.logging.SessionLog;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -42,8 +41,8 @@ public class DatabaseConfig {
         // TODO Enable dynamic weaving for performance
         factory.getJpaPropertyMap().put(PersistenceUnitProperties.WEAVING,
                 Boolean.FALSE.toString());
-//        factory.getJpaPropertyMap().put(PersistenceUnitProperties.LOGGING_LEVEL,
-//                SessionLog.FINEST_LABEL);
+        // factory.getJpaPropertyMap().put(PersistenceUnitProperties.LOGGING_LEVEL,
+        // SessionLog.FINEST_LABEL);
         factory.getJpaPropertyMap().put(PersistenceUnitProperties.LOGGING_PARAMETERS,
                 Boolean.TRUE.toString());
         factory.afterPropertiesSet();

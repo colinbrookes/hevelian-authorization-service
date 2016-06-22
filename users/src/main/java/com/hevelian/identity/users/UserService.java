@@ -1,5 +1,6 @@
 package com.hevelian.identity.users;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
-import com.hevelian.identity.core.exc.NotImplementedException;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
 import com.hevelian.identity.users.repository.RoleRepository;
@@ -64,10 +64,52 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void addRemoveUsersOfRole(String name, Set<String> newUserNames,
-            Set<String> removedUserNames) {
-        // TODO to implement.
-        throw new NotImplementedException();
+    // TODO refactor this
+    public void addRemoveUsersOfRole(String roleName, Set<String> newUserNames,
+            Set<String> removedUserNames)
+                    throws RoleNotFoundByNameException, UsersNotFoundByNameException {
+        Role role = roleRepository.findOneByName(roleName);
+        if (role == null) {
+            throw new RoleNotFoundByNameException(roleName);
+        }
+
+        Set<String> missingUserNames = new HashSet<>();
+        // TODO find a way to do this using JPA
+        removedUserNames.forEach(n -> {
+            User u = userRepository.findOneByName(n);
+            if (u == null) {
+                missingUserNames.add(n);
+            } else {
+                u.getRoles().remove(role);
+                // Save one by one instead of collectiong all to same collection
+                // and saving all at once. Maybe we will get too many names, who
+                // knows..
+                userRepository.save(u);
+            }
+        });
+
+        if (!missingUserNames.isEmpty()) {
+            throw new UsersNotFoundByNameException(missingUserNames);
+        }
+
+        // TODO find a way to do this using JPA
+        newUserNames.forEach(n -> {
+            User u = userRepository.findOneByName(n);
+            if (u == null) {
+                missingUserNames.add(n);
+            } else {
+                u.getRoles().add(role);
+                // Save one by one instead of collectiong all to same collection
+                // and saving all at once. Maybe we will get too many names, who
+                // knows..
+                userRepository.save(u);
+            }
+        });
+
+        if (!missingUserNames.isEmpty()) {
+            throw new UsersNotFoundByNameException(missingUserNames);
+        }
+
     }
 
     @Transactional(readOnly = false)
@@ -157,6 +199,37 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void updateUsersOfRole(String roleName, Set<String> newUserNames)
+            throws UsersNotFoundByNameException, RoleNotFoundByNameException {
+        Role role = roleRepository.findOneByName(roleName);
+        if (role == null) {
+            throw new RoleNotFoundByNameException(roleName);
+        }
+        Long roleId = role.getId();
+        roleRepository.deleteAllUsers(roleId);
+        Set<String> missingUserNames = new HashSet<>();
+        // TODO find a way to assign multiple users to some role using query.
+        // Something like this:
+        // INSERT INTO USER_ROLE(USER_ID, ROLES_ID) SELECT ID, ?1 AS
+        // ROLES_ID FROM USER WHERE USER.NAME IN (?2)
+        newUserNames.forEach(n -> {
+            User u = userRepository.findOneByName(n);
+            if (u == null) {
+                missingUserNames.add(n);
+            } else {
+                u.getRoles().add(role);
+                // Save one by one instead of collectiong all to same collection
+                // and saving all at once. Maybe we will get too many names, who
+                // knows..
+                userRepository.save(u);
+            }
+        });
+
+        if (!missingUserNames.isEmpty()) {
+            throw new UsersNotFoundByNameException(missingUserNames);
+        }
+    }
+
     public static class RoleNotFoundByNameException extends EntityNotFoundByCriteriaException {
         private static final long serialVersionUID = -8295998392759277017L;
 
@@ -178,6 +251,14 @@ public class UserService {
 
         public UserNotFoundByNameException(String userName) {
             super("name", userName);
+        }
+    }
+
+    public static class UsersNotFoundByNameException extends UserNotFoundByNameException {
+        private static final long serialVersionUID = -5578641450581609271L;
+
+        public UsersNotFoundByNameException(Set<String> userNames) {
+            super(Joiner.on(", ").join(userNames));
         }
     }
 }

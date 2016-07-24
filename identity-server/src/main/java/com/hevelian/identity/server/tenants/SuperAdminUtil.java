@@ -19,4 +19,17 @@ public class SuperAdminUtil {
         return false;
     }
 
+    // TODO remove these methods in case we do not need the mechanism of
+    // temporary tenant id for super admin
+    // public void setCurrentTenantId(Long tenantId) {
+    // RequestContextHolder.currentRequestAttributes().setAttribute(TENANT_ID_ATTRIBUTE,
+    // tenantId,
+    // RequestAttributes.SCOPE_REQUEST);
+    // }
+    //
+    // public Long getCurrentTenantId() {
+    // return (Long) RequestContextHolder.currentRequestAttributes()
+    // .getAttribute(TENANT_ID_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+    // }
+
 }

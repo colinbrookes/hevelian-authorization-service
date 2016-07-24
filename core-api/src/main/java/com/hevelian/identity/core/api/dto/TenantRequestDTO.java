@@ -7,13 +7,20 @@ import javax.validation.constraints.Pattern;
 import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.model.Tenant;
 
+import lombok.Setter;
+
 public class TenantRequestDTO extends Tenant implements EntityDTO<Tenant> {
+    @Setter
+    private TenantAdminRequestDTO tenantAdmin;
+
     @Override
     public Tenant toEntity() {
         Tenant entity = new Tenant();
         entity.setActive(getActive());
         entity.setDomain(getDomain());
-        entity.setTenantAdmin(getTenantAdmin().toEntity());
+        entity.setContactEmail(getContactEmail());
+        entity.setDescription(getDescription());
+        entity.setAdminName(getTenantAdmin().getName());
         return entity;
     }
 
@@ -25,20 +32,23 @@ public class TenantRequestDTO extends Tenant implements EntityDTO<Tenant> {
 
     @Override
     @NotNull
+    // TODO set email pattern
+    public String getContactEmail() {
+        return super.getContactEmail();
+    }
+
+    @Override
+    @NotNull
     // TODO localize message
     @Pattern(regexp = TenantService.DOMAIN_REGEXP, message = "Illegal characters in tenant domain. Letters, numbers, '.' and '_' are allowed. Example: tenant1.com")
     public String getDomain() {
         return super.getDomain();
     }
 
-    @Override
     @NotNull
     @Valid
-    public UserRequestDTO getTenantAdmin() {
-        return (UserRequestDTO) super.getTenantAdmin();
-    }
-
-    public void setTenantAdmin(UserRequestDTO tenantAdmin) {
-        super.setTenantAdmin(tenantAdmin);
+    // TODO return UserInfo directly?
+    public TenantAdminRequestDTO getTenantAdmin() {
+        return tenantAdmin;
     }
 }

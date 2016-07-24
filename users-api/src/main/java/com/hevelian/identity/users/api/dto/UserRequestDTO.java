@@ -19,6 +19,7 @@ public class UserRequestDTO extends UserCredentialsRequestDTO {
         user.setEnabled(getEnabled());
         user.setName(getName());
         user.setPassword(getPassword());
+        user.setDeletable(false);
         return user;
     }
 

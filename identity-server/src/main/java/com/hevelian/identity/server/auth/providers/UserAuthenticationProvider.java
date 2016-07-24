@@ -55,23 +55,23 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
             throw new BadCredentialsException("Bad Credentials");
         }
 
-        TenantUtil.setCurrentTenantId(tenant.getId());
-
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 
-        if (tenant.getTenantAdmin().getName().equals(usernameStripped)
-                && passwordEncoder.matches(password, tenant.getTenantAdmin().getPassword())) {
-            authorities.add(new SimpleGrantedAuthority(SystemRoles.TENANT_ADMIN));
-        } else {
-            com.hevelian.identity.users.model.User user = authUserService.getUser(usernameStripped);
-            if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
-                log.debug("User '{0}' not found or credentials invalid.", username);
-                throw new BadCredentialsException("Bad Credentials");
-            }
-            for (Role role : user.getRoles()) {
-                authorities.add(new SimpleGrantedAuthority(role.getName()));
-            }
+        TenantUtil.setCurrentTenantId(tenant.getId());
+
+        com.hevelian.identity.users.model.User user = authUserService.getUser(usernameStripped);
+
+        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+            log.debug("User '{0}' not found or credentials invalid.", username);
+            throw new BadCredentialsException("Bad Credentials");
         }
+
+        for (Role role : user.getRoles()) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
+
+        if (tenant.getAdminName().equals(usernameStripped))
+            authorities.add(new SimpleGrantedAuthority(SystemRoles.TENANT_ADMIN));
 
         log.debug("Authentication of user completed successfully for username '0'.", username);
 
@@ -79,6 +79,7 @@ public class UserAuthenticationProvider extends AuthenticationProviderBase {
         userDetails.eraseCredentials();
         return new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(),
                 userDetails.getAuthorities());
+
     }
 
     @Override

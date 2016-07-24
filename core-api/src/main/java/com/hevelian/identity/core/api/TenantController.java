@@ -1,6 +1,7 @@
 package com.hevelian.identity.core.api;
 
 import javax.validation.Valid;
+import javax.validation.groups.Default;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.Iterables;
 import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;
 import com.hevelian.identity.core.api.dto.TenantRequestDTO;
-import com.hevelian.identity.core.api.dto.UserRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.model.Tenant;
 
 import lombok.RequiredArgsConstructor;
@@ -40,11 +41,12 @@ public class TenantController {
     }
 
     @RequestMapping(path = "/addTenant", method = RequestMethod.POST)
-    public PrimitiveResult<String> addTenant(
-            @Validated(value = NewTenantGroup.class) @RequestBody TenantRequestDTO tenant) {
+    public PrimitiveResult<String> addTenant(@Validated(value = { Default.class,
+            NewTenantGroup.class }) @RequestBody TenantRequestDTO tenant) {
         tenant.getTenantAdmin()
                 .setPassword(passwordEncoder.encode(tenant.getTenantAdmin().getPassword()));
-        return new PrimitiveResult<String>(tenantService.addTenant(tenant.toEntity()).getDomain());
+        return new PrimitiveResult<String>(tenantService
+                .addTenant(tenant.toEntity(), tenant.getTenantAdmin().toEntity()).getDomain());
     }
 
     @RequestMapping(path = "/updateTenant", method = RequestMethod.POST)
@@ -53,7 +55,7 @@ public class TenantController {
         if (tenant.getTenantAdmin().getPassword() != null)
             tenant.getTenantAdmin()
                     .setPassword(passwordEncoder.encode(tenant.getTenantAdmin().getPassword()));
-        tenantService.updateTenant(tenant.toEntity());
+        tenantService.updateTenant(tenant.toEntity(), tenant.getTenantAdmin().toEntity());
     }
 
     @RequestMapping(path = "/deleteTenant", method = RequestMethod.POST)

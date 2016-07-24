@@ -22,6 +22,25 @@ public class SuperAdminTenantAwareJpaTransactionManager
         }
         log.debug(
                 "Super Administrator is requesting transaction. No tenant id provided to the context.");
-
     }
+
+    // TODO uncomment in case we need to read tenant id from the request scope
+    // for super admin
+    // @Override
+    // protected void handleUser(UserDetails user, EntityManager em) {
+    // if (!SuperAdminUtil.isSuperAdmin(user)) {
+    // throw new NoTenantProvidedException();
+    // }
+    // final Serializable tenantId = SuperAdminUtil.getCurrentTenantId();
+    // if (tenantId != null) {
+    // log.debug("Super Administrator is requesting transaction for tenant with
+    // id {}.",
+    // tenantId);
+    // em.setProperty(getMultitenantProperty(), tenantId);
+    // } else {
+    // log.debug(
+    // "Super Administrator is requesting transaction. No tenant id provided to
+    // the context.");
+    // }
+    // }
 }

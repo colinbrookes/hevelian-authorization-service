@@ -8,17 +8,19 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
+import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.core.repository.TenantRepository;
 import com.hevelian.identity.core.userinfo.UserInfo;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Service
 // Manage all transactions in service layer, where business logic occurs.
 @Transactional(readOnly = true)
 @Secured(value = SystemRoles.SUPER_ADMIN)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TenantService {
     // TODO review the regexp
     public static final String DOMAIN_REGEXP = "\\w+\\.\\w+";
@@ -26,19 +28,25 @@ public class TenantService {
     private final TenantAdminService tenantAdminService;
 
     @Transactional
-    public void activateTenant(String tenantDomain) throws TenantNotFoundByDomainException {
-        int affectedRows = tenantRepository.setActive(tenantDomain, true);
-        if (affectedRows == 0) {
-            throw new TenantNotFoundByDomainException(tenantDomain);
+    public void activateTenant(String tenantDomain)
+            throws TenantNotFoundByDomainException, TenantActiveAlreadyInStateException {
+        Tenant tenant = getTenant(tenantDomain);
+        if (tenant.getActive()) {
+            throw new TenantActiveAlreadyInStateException(true);
         }
+        tenant.setActive(true);
+        tenantRepository.save(tenant);
     }
 
     @Transactional
-    public void deactivateTenant(String tenantDomain) throws TenantNotFoundByDomainException {
-        int affectedRows = tenantRepository.setActive(tenantDomain, false);
-        if (affectedRows == 0) {
-            throw new TenantNotFoundByDomainException(tenantDomain);
+    public void deactivateTenant(String tenantDomain)
+            throws TenantNotFoundByDomainException, TenantActiveAlreadyInStateException {
+        Tenant tenant = getTenant(tenantDomain);
+        if (!tenant.getActive()) {
+            throw new TenantActiveAlreadyInStateException(false);
         }
+        tenant.setActive(false);
+        tenantRepository.save(tenant);
     }
 
     @Transactional
@@ -72,7 +80,7 @@ public class TenantService {
     // TODO add admin update functionality
     public Tenant updateTenant(Tenant tenant, UserInfo tenantAdmin)
             throws TenantNotFoundByDomainException {
-        Preconditions.checkArgument(tenant.getId() != null);
+        Preconditions.checkArgument(tenant.getId() == null);
         Tenant tenantEntity = getTenant(tenant.getDomain());
         if (tenantEntity == null) {
             throw new TenantNotFoundByDomainException(tenant.getDomain());
@@ -85,12 +93,25 @@ public class TenantService {
         tenantRepository.save(tenantEntity);
         // TODO check in the following method whether the tenant admin name is
         // the same
-        tenantAdminService.updateTenantAdmin(tenant, tenantAdmin);
+        tenantAdminService.updateTenantAdmin(tenantEntity, tenantAdmin);
         return tenantEntity;
     }
 
     public Iterable<Tenant> getAllTenants() {
         return tenantRepository.findAll();
+    }
+
+    @Getter
+    public static class TenantActiveAlreadyInStateException extends IllegalEntityStateException {
+        private static final long serialVersionUID = -622542404766092404L;
+        private final boolean active;
+
+        public TenantActiveAlreadyInStateException(boolean active) {
+            super(String.format(
+                    "The tenant active state cannot be set to '%s' because it is already the current state.",
+                    active));
+            this.active = active;
+        }
     }
 
     public static class TenantNotFoundByDomainException extends EntityNotFoundByCriteriaException {

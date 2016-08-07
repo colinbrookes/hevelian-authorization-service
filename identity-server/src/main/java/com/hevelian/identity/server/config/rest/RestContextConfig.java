@@ -26,6 +26,7 @@ import org.wso2.balana.ParsingException;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
 import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
@@ -85,6 +86,8 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
                 // when we feel the need.
                 .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
                 .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
+                .addErrorMessageHandler(TenantActiveAlreadyInStateException.class,
+                        HttpStatus.CONFLICT)
                 .addErrorMessageHandler(UserNotFoundByNameException.class, HttpStatus.NOT_FOUND)
                 .addErrorMessageHandler(RoleNotFoundByNameException.class, HttpStatus.NOT_FOUND)
                 .addErrorMessageHandler(RolesNotFoundByNameException.class, HttpStatus.NOT_FOUND)

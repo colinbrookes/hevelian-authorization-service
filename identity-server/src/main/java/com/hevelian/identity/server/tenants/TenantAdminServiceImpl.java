@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 // Manage all transactions in service layer, where business logic occurs.
 @Transactional(readOnly = true)
 @Secured(value = SystemRoles.SUPER_ADMIN)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TenantAdminServiceImpl implements TenantAdminService {
 
     private final UserRepository userRepository;
@@ -53,15 +53,16 @@ public class TenantAdminServiceImpl implements TenantAdminService {
     // TODO reuse the method above
     public void updateTenantAdmin(Tenant tenant, UserInfo tenantAdmin) {
         Preconditions.checkArgument(tenant.getAdminName().equals(tenantAdmin.getName()));
-        User user = new User();
-        user.setEnabled(true);
-        user.setName(tenantAdmin.getName());
+        entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT,
+                tenant.getId());
+        
+        User user = userRepository.findOneByName(tenantAdmin.getName());
+        Preconditions.checkNotNull(user);
+        // TODO what if the name changed...
         if (!Strings.isEmpty(tenantAdmin.getPassword())) {
             user.setPassword(tenantAdmin.getPassword());
         }
-        user.setDeletable(false);
-        entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT,
-                tenant.getId());
+        
         userRepository.save(user);
         // TODO possibly to reset the Id (depending on approach)
     }

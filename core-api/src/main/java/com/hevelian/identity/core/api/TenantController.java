@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Iterables;
 import com.hevelian.identity.core.TenantService;
+import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;
@@ -23,20 +24,20 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(path = "/TenantService")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TenantController {
     private final TenantService tenantService;
     private final PasswordEncoder passwordEncoder;
 
     @RequestMapping(path = "/activateTenant", method = RequestMethod.POST)
     public void activateTenant(@Valid @RequestBody TenantDomainDTO tenantDomainDTO)
-            throws TenantNotFoundByDomainException {
+            throws TenantNotFoundByDomainException, TenantActiveAlreadyInStateException {
         tenantService.activateTenant(tenantDomainDTO.getTenantDomain());
     }
 
     @RequestMapping(path = "/deactivateTenant", method = RequestMethod.POST)
     public void deactivateTenant(@Valid @RequestBody TenantDomainDTO tenantDomainDTO)
-            throws TenantNotFoundByDomainException {
+            throws TenantNotFoundByDomainException, TenantActiveAlreadyInStateException {
         tenantService.deactivateTenant(tenantDomainDTO.getTenantDomain());
     }
 

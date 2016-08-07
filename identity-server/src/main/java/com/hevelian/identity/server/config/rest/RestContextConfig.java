@@ -10,6 +10,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -20,6 +24,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExc
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.wso2.balana.ParsingException;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
 import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
@@ -47,6 +53,20 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         resolvers.add(exceptionHandlerExceptionResolver()); // resolves
                                                             // @ExceptionHandler
         resolvers.add(restExceptionResolver());
+    }
+
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+        super.configureMessageConverters(converters);
+        // TODO check thread safety of setting the custom dateFormat
+        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder()
+                .dateFormat(new ISO8601DateFormat())
+                // Add customization for Java8 DateTime API
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
+        converters.add(
+                new MappingJackson2XmlHttpMessageConverter(builder.createXmlMapper(true).build()));
     }
 
     // See https://github.com/jirutka/spring-rest-exception-handler for more

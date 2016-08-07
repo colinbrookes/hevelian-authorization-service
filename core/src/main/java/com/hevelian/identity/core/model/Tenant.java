@@ -18,7 +18,7 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = "domain", callSuper = false)
 public class Tenant extends AbstractEntity {
-    @Column(insertable = false, updatable = false)
+    @Column(updatable = false)
     @Setter(AccessLevel.PRIVATE)
     private LocalDateTime dateCreated;
 
@@ -41,7 +41,6 @@ public class Tenant extends AbstractEntity {
 
     @PrePersist
     void onCreate() {
-        this.setDateCreated(LocalDateTime.now());
+        setDateCreated(LocalDateTime.now());
     }
-
 }

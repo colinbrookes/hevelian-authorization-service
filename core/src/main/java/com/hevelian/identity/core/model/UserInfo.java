@@ -1,4 +1,4 @@
-package com.hevelian.identity.core.userinfo;
+package com.hevelian.identity.core.model;
 
 public interface UserInfo {
     String getName();

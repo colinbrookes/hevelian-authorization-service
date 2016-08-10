@@ -2,7 +2,7 @@ package com.hevelian.identity.core.api.dto;
 
 import javax.validation.constraints.NotNull;
 
-import com.hevelian.identity.core.userinfo.UserInfo;
+import com.hevelian.identity.core.model.UserInfo;
 
 import lombok.Setter;
 

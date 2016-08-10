@@ -10,30 +10,43 @@ import com.google.common.base.Preconditions;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.model.Tenant;
+import com.hevelian.identity.core.model.UserInfo;
 import com.hevelian.identity.core.repository.TenantRepository;
-import com.hevelian.identity.core.userinfo.UserInfo;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Service
-// Manage all transactions in service layer, where business logic occurs.
 @Transactional(readOnly = true)
 @Secured(value = SystemRoles.SUPER_ADMIN)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TenantService {
-    // TODO review the regexp
-    public static final String DOMAIN_REGEXP = "\\w+\\.\\w+";
+    /**
+     * This regular expression pattern is able to match most of the
+     * "real-working" domain names. The pattern makes sure domain name matches
+     * the following criteria :
+     * <ul>
+     * <li>The domain name should be a-z | A-Z | 0-9 and hyphen(-)</li>
+     * <li>The domain name should be between 1 and 63 characters long</li>
+     * <li>Last Tld must be at least two characters, and a maximum of 6
+     * characters</li>
+     * <li>The domain name should not start or end with hyphen (-) (e.g.
+     * -hevelian.com or hevelian-.com)</li>
+     * <li>The domain name can be a subdomain (e.g. identity.hevelian.com)</li>
+     */
+    // Source:
+    // http://www.mkyong.com/regular-expressions/domain-name-regular-expression-example/
+    public static final String DOMAIN_REGEXP = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
     private final TenantRepository tenantRepository;
     private final TenantAdminService tenantAdminService;
+    private final TenantLifecycleService tenantLifecycleService;
 
     @Transactional
     public void activateTenant(String tenantDomain)
             throws TenantNotFoundByDomainException, TenantActiveAlreadyInStateException {
         Tenant tenant = getTenant(tenantDomain);
-        if (tenant.getActive()) {
+        if (tenant.getActive())
             throw new TenantActiveAlreadyInStateException(true);
-        }
         tenant.setActive(true);
         tenantRepository.save(tenant);
     }
@@ -42,9 +55,8 @@ public class TenantService {
     public void deactivateTenant(String tenantDomain)
             throws TenantNotFoundByDomainException, TenantActiveAlreadyInStateException {
         Tenant tenant = getTenant(tenantDomain);
-        if (!tenant.getActive()) {
+        if (!tenant.getActive())
             throw new TenantActiveAlreadyInStateException(false);
-        }
         tenant.setActive(false);
         tenantRepository.save(tenant);
     }
@@ -52,48 +64,50 @@ public class TenantService {
     @Transactional
     public Tenant addTenant(Tenant tenant, UserInfo tenantAdmin) {
         Preconditions.checkArgument(tenant.getId() == null);
-        // TODO move this line to setTenantAdmin method
-        Preconditions.checkArgument(Objects.equal(tenant.getAdminName(), tenantAdmin.getName()));
         tenantRepository.save(tenant);
-        tenantAdminService.setTenantAdmin(tenant, tenantAdmin);
+        tenantAdminService.createTenantAdmin(tenant, tenantAdmin);
+        tenantLifecycleService.tenantCreated(tenant);
         return tenant;
     }
 
     @Transactional
-    // TODO delete all the other tenant related info as well from the database
     public void deleteTenant(String tenantDomain) throws TenantNotFoundByDomainException {
-        int affectedRows = tenantRepository.deleteByDomain(tenantDomain);
-        if (affectedRows == 0) {
-            throw new TenantNotFoundByDomainException(tenantDomain);
-        }
+        Tenant tenant = getTenant(tenantDomain);
+        tenantRepository.delete(tenant);
+        tenantLifecycleService.tenantDeleted(tenant);
     }
 
     public Tenant getTenant(String tenantDomain) throws TenantNotFoundByDomainException {
         Tenant tenant = tenantRepository.findByDomain(tenantDomain);
-        if (tenant == null) {
+        if (tenant == null)
             throw new TenantNotFoundByDomainException(tenantDomain);
-        }
         return tenant;
     }
 
     @Transactional
-    // TODO add admin update functionality
     public Tenant updateTenant(Tenant tenant, UserInfo tenantAdmin)
             throws TenantNotFoundByDomainException {
         Preconditions.checkArgument(tenant.getId() == null);
         Tenant tenantEntity = getTenant(tenant.getDomain());
-        if (tenantEntity == null) {
-            throw new TenantNotFoundByDomainException(tenant.getDomain());
+
+        // Delete previous tenant administrator in case its name changed.
+        boolean newAdmin = false;
+        if (!Objects.equal(tenantEntity.getAdminName(), tenantAdmin.getName())) {
+            tenantAdminService.deleteTenantAdmin(tenantEntity);
+            newAdmin = true;
         }
-        Preconditions
-                .checkArgument(Objects.equal(tenant.getAdminName(), tenantEntity.getAdminName()));
+
         tenantEntity.setActive(tenant.getActive());
         tenantEntity.setDescription(tenant.getDescription());
         tenantEntity.setContactEmail(tenant.getContactEmail());
+        tenantEntity.setAdminName(tenant.getAdminName());
         tenantRepository.save(tenantEntity);
-        // TODO check in the following method whether the tenant admin name is
-        // the same
-        tenantAdminService.updateTenantAdmin(tenantEntity, tenantAdmin);
+
+        if (newAdmin)
+            tenantAdminService.createTenantAdmin(tenantEntity, tenantAdmin);
+        else
+            tenantAdminService.updateTenantAdmin(tenantEntity, tenantAdmin);
+
         return tenantEntity;
     }
 
@@ -123,8 +137,16 @@ public class TenantService {
     }
 
     public static interface TenantAdminService {
-        void setTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
+        void createTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
 
         void updateTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
+
+        void deleteTenantAdmin(Tenant tenant);
+    }
+
+    public static interface TenantLifecycleService {
+        void tenantCreated(Tenant tenant);
+
+        void tenantDeleted(Tenant tenant);
     }
 }

@@ -14,7 +14,7 @@ import com.google.common.base.Preconditions;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.TenantService.TenantAdminService;
 import com.hevelian.identity.core.model.Tenant;
-import com.hevelian.identity.core.userinfo.UserInfo;
+import com.hevelian.identity.core.model.UserInfo;
 import com.hevelian.identity.users.model.User;
 import com.hevelian.identity.users.repository.UserRepository;
 
@@ -34,7 +34,7 @@ public class TenantAdminServiceImpl implements TenantAdminService {
 
     @Override
     @Transactional
-    public void setTenantAdmin(Tenant tenant, UserInfo tenantAdmin) {
+    public void createTenantAdmin(Tenant tenant, UserInfo tenantAdmin) {
         Preconditions.checkArgument(tenant.getAdminName().equals(tenantAdmin.getName()));
         User user = new User();
         user.setEnabled(true);
@@ -44,27 +44,34 @@ public class TenantAdminServiceImpl implements TenantAdminService {
         entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT,
                 tenant.getId());
         userRepository.save(user);
-        // TODO possibly to reset the Id (depending on approach)
-
+        entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT, null);
     }
 
     @Override
     @Transactional
-    // TODO reuse the method above
     public void updateTenantAdmin(Tenant tenant, UserInfo tenantAdmin) {
         Preconditions.checkArgument(tenant.getAdminName().equals(tenantAdmin.getName()));
         entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT,
                 tenant.getId());
-        
+
         User user = userRepository.findOneByName(tenantAdmin.getName());
         Preconditions.checkNotNull(user);
-        // TODO what if the name changed...
+
         if (!Strings.isEmpty(tenantAdmin.getPassword())) {
             user.setPassword(tenantAdmin.getPassword());
         }
-        
+
         userRepository.save(user);
-        // TODO possibly to reset the Id (depending on approach)
+        entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT, null);
+    }
+
+    @Override
+    public void deleteTenantAdmin(Tenant tenant) {
+        entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT,
+                tenant.getId());
+        int affectedRows = userRepository.deleteByName(tenant.getAdminName());
+        Preconditions.checkArgument(affectedRows == 1);
+        entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT, null);
     }
 
 }

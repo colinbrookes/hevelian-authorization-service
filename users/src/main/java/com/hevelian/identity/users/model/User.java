@@ -5,14 +5,18 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.eclipse.persistence.annotations.Index;
 import org.eclipse.persistence.annotations.Multitenant;
+import org.eclipse.persistence.annotations.MultitenantType;
+import org.eclipse.persistence.internal.jpa.metadata.columns.TenantDiscriminatorColumnMetadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.hevelian.identity.core.model.AbstractEntity;
-import com.hevelian.identity.core.userinfo.UserInfo;
+import com.hevelian.identity.core.model.UserInfo;
 
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -20,13 +24,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Multitenant
+@Multitenant(MultitenantType.SINGLE_TABLE)
 @Getter
 @Setter
 @EqualsAndHashCode(of = "name", callSuper = false)
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "name",
+        TenantDiscriminatorColumnMetadata.NAME_DEFAULT }) })
 public class User extends AbstractEntity implements UserInfo {
 
-    @Column(nullable = false, unique = true)
+    // No unique constraint on name because of
+    // https://bugs.eclipse.org/bugs/show_bug.cgi?id=499504
+    @Column(nullable = false)
     @Index
     private String name;
 
@@ -44,7 +52,7 @@ public class User extends AbstractEntity implements UserInfo {
     private Set<Role> roles;
 
     @Column(nullable = false, updatable = false)
-    //Lombok cannot work with getters for Boolean
+    // Lombok cannot work with getters for Boolean
     @Getter(AccessLevel.NONE)
     private Boolean deletable;
 

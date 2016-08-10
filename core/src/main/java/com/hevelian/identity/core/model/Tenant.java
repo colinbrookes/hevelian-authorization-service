@@ -52,7 +52,7 @@ public class Tenant extends AbstractEntity {
     private String contactEmail;
 
     @Column
-    // TODO handle description length properly
+    // Default length (255) should be fine
     private String description;
 
     // ADDITIONAL JPA SPECIFIC LOGIC TO HANDLE CREATE DATE AND ACTIVE DATE

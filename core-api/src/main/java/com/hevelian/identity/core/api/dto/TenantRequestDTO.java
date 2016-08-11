@@ -2,15 +2,21 @@ package com.hevelian.identity.core.api.dto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
-import com.hevelian.identity.core.TenantService;
+import org.hibernate.validator.constraints.Email;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hevelian.identity.core.api.validation.constraints.Domain;
 import com.hevelian.identity.core.model.Tenant;
 
+import lombok.Getter;
 import lombok.Setter;
 
 public class TenantRequestDTO extends Tenant implements EntityDTO<Tenant> {
+    @Getter
     @Setter
+    @NotNull
+    @Valid
     private TenantAdminRequestDTO tenantAdmin;
 
     @Override
@@ -32,23 +38,21 @@ public class TenantRequestDTO extends Tenant implements EntityDTO<Tenant> {
 
     @Override
     @NotNull
-    // TODO set email pattern
+    @Email
     public String getContactEmail() {
         return super.getContactEmail();
     }
 
     @Override
     @NotNull
-    // TODO localize message
-    @Pattern(regexp = TenantService.DOMAIN_REGEXP, message = "Illegal characters in tenant domain. Letters, numbers, '.' and '_' are allowed. Example: tenant1.com")
+    @Domain
     public String getDomain() {
         return super.getDomain();
     }
 
-    @NotNull
-    @Valid
-    // TODO return UserInfo directly?
-    public TenantAdminRequestDTO getTenantAdmin() {
-        return tenantAdmin;
+    @Override
+    @JsonIgnore
+    public String getAdminName() {
+        return super.getAdminName();
     }
 }

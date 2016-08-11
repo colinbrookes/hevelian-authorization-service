@@ -41,6 +41,7 @@ public class TenantAdminServiceImpl implements TenantAdminService {
         user.setName(tenantAdmin.getName());
         user.setPassword(tenantAdmin.getPassword());
         user.setDeletable(false);
+        // TODO make this thread safe
         entityManager.setProperty(EntityManagerProperties.MULTITENANT_PROPERTY_DEFAULT,
                 tenant.getId());
         userRepository.save(user);

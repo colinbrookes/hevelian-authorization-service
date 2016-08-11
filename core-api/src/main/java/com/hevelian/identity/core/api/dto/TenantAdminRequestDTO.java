@@ -1,15 +1,20 @@
 package com.hevelian.identity.core.api.dto;
 
-import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hevelian.identity.core.model.UserInfo;
 
+import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 @Setter
 public class TenantAdminRequestDTO implements UserInfo, EntityDTO<UserInfo> {
 
+    @NotBlank
     private String name;
+    @NotBlank(groups = NewTenantGroup.class)
     private String password;
 
     @Override
@@ -35,18 +40,7 @@ public class TenantAdminRequestDTO implements UserInfo, EntityDTO<UserInfo> {
     }
 
     @Override
-    @NotNull
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    @NotNull(groups = NewTenantGroup.class)
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
+    @JsonIgnore
     public boolean isDeletable() {
         return false;
     }

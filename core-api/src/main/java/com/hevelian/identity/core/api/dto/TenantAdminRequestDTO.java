@@ -15,6 +15,7 @@ public class TenantAdminRequestDTO implements UserInfo, EntityDTO<UserInfo> {
     @NotBlank
     private String name;
     @NotBlank(groups = NewTenantGroup.class)
+    // TODO password validator
     private String password;
 
     @Override

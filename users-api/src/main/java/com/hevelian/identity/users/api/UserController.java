@@ -13,6 +13,7 @@ import com.hevelian.identity.core.api.PrimitiveResult;
 import com.hevelian.identity.users.UserService;
 import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
 import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
+import com.hevelian.identity.users.UserService.UserNotDeletableException;
 import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
 import com.hevelian.identity.users.UserService.UsersNotFoundByNameException;
 import com.hevelian.identity.users.api.dto.AddRemoveUserRolesRequestDTO;
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(path = "/UserService")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
@@ -39,7 +40,7 @@ public class UserController {
     @RequestMapping(path = "/addRemoveRolesOfUser", method = RequestMethod.POST)
     public void addRemoveRolesOfUser(
             @Valid @RequestBody AddRemoveUserRolesRequestDTO addRemoveUserRolesRequest)
-                    throws UserNotFoundByNameException, RolesNotFoundByNameException {
+            throws UserNotFoundByNameException, RolesNotFoundByNameException {
         userService.addRemoveRolesOfUser(addRemoveUserRolesRequest.getName(),
                 addRemoveUserRolesRequest.getNewRoles(),
                 addRemoveUserRolesRequest.getRemovedRoles());
@@ -48,7 +49,7 @@ public class UserController {
     @RequestMapping(path = "/addRemoveUsersOfRole", method = RequestMethod.POST)
     public void addRemoveUsersOfRole(
             @Valid @RequestBody AddRemoveUsersOfRoleRequestDTO addRemoveUsersOfRoleRequest)
-                    throws UsersNotFoundByNameException, RoleNotFoundByNameException {
+            throws UsersNotFoundByNameException, RoleNotFoundByNameException {
         userService.addRemoveUsersOfRole(addRemoveUsersOfRoleRequest.getName(),
                 addRemoveUsersOfRoleRequest.getNewUserNames(),
                 addRemoveUsersOfRoleRequest.getRemovedUserNames());
@@ -82,7 +83,7 @@ public class UserController {
 
     @RequestMapping(path = "/deleteUser", method = RequestMethod.POST)
     public void deleteUser(@Valid @RequestBody UserNameRequestDTO userName)
-            throws UserNotFoundByNameException {
+            throws UserNotFoundByNameException, UserNotDeletableException {
         userService.deleteUser(userName.getName());
     }
 
@@ -103,7 +104,8 @@ public class UserController {
     }
 
     @RequestMapping(path = "/getUsersOfRole", method = RequestMethod.POST)
-    public Iterable<User> getUsersOfRole(@Valid @RequestBody RoleRequestDTO role) {
+    public Iterable<User> getUsersOfRole(@Valid @RequestBody RoleRequestDTO role)
+            throws RoleNotFoundByNameException {
         return userService.getUsersOfRole(role.toEntity());
     }
 
@@ -117,7 +119,7 @@ public class UserController {
     @RequestMapping(path = "/updateRolesOfUser", method = RequestMethod.POST)
     public void updateRolesOfUser(
             @Valid @RequestBody UpdateUserRolesRequestDTO updateUserRolesRequest)
-                    throws RolesNotFoundByNameException, UserNotFoundByNameException {
+            throws RolesNotFoundByNameException, UserNotFoundByNameException {
         userService.updateRolesOfUser(updateUserRolesRequest.getName(),
                 updateUserRolesRequest.getNewRoles());
     }
@@ -125,7 +127,7 @@ public class UserController {
     @RequestMapping(path = "/updateUsersOfRole", method = RequestMethod.POST)
     public void updateUsersOfRole(
             @Valid @RequestBody UpdateUsersOfRoleRequestDTO updateUsersOfRoleRequest)
-                    throws UsersNotFoundByNameException, RoleNotFoundByNameException {
+            throws UsersNotFoundByNameException, RoleNotFoundByNameException {
         userService.updateUsersOfRole(updateUsersOfRoleRequest.getName(),
                 updateUsersOfRoleRequest.getNewUserNames());
     }

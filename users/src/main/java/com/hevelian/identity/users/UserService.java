@@ -11,24 +11,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.hevelian.identity.core.ITenantProvider;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
+import com.hevelian.identity.core.exc.IllegalEntityStateException;
+import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
 import com.hevelian.identity.users.repository.RoleRepository;
 import com.hevelian.identity.users.repository.UserRepository;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Service
 // Manage all transactions in service layer, where business logic occurs.
 @Transactional(readOnly = true)
 @Secured(value = SystemRoles.TENANT_ADMIN)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final ITenantProvider tenantProvider;
 
     @Transactional(readOnly = false)
     public Role addRole(Role role) {
@@ -37,9 +43,91 @@ public class UserService {
     }
 
     @Transactional(readOnly = false)
+    public User addUser(User user) throws RolesNotFoundByNameException {
+        Preconditions.checkArgument(user.getId() == null);
+        Set<String> userRoleNames = user.getRoles().stream().map(r -> r.getName())
+                .collect(Collectors.toSet());
+        Preconditions.checkArgument(userRoleNames.size() == user.getRoles().size());
+
+        Set<Role> existingRoles = roleRepository.findByNameIsIn(userRoleNames);
+        if (existingRoles.size() != user.getRoles().size()) {
+            Set<String> existingRoleNames = existingRoles.stream().map(r -> r.getName())
+                    .collect(Collectors.toSet());
+            throw new RolesNotFoundByNameException(
+                    Sets.difference(userRoleNames, existingRoleNames));
+        }
+        user.getRoles().clear();
+        user.getRoles().addAll(existingRoles);
+        return userRepository.save(user);
+    }
+
+    public User getUser(String userName) throws UserNotFoundByNameException {
+        User user = userRepository.findOneByName(userName);
+        if (user == null) {
+            throw new UserNotFoundByNameException(userName);
+        }
+        return user;
+    }
+
+    public Iterable<Role> findAllRoles() {
+        return roleRepository.findAll();
+    }
+
+    public Iterable<User> findAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public Iterable<User> getUsersOfRole(Role role) throws RoleNotFoundByNameException {
+        Role r = role;
+        if (role.getId() == null) {
+            r = roleRepository.findOneByName(role.getName());
+            if (r == null) {
+                throw new RoleNotFoundByNameException(role.getName());
+            }
+        }
+        return userRepository.findByRoles_Name(r.getName());
+    }
+
+    public void changePassword(String userName, String newPassword)
+            throws UserNotFoundByNameException {
+        int affectedRows = userRepository.changePassword(userName, newPassword);
+        if (affectedRows == 0) {
+            throw new UserNotFoundByNameException(userName);
+        }
+    }
+
+    public void deleteRole(String roleName) throws RoleNotFoundByNameException {
+        int affectedRows = roleRepository.deleteByName(roleName);
+        if (affectedRows == 0) {
+            throw new RoleNotFoundByNameException(roleName);
+        }
+    }
+
+    public void deleteUser(String userName)
+            throws UserNotFoundByNameException, UserNotDeletableException {
+        Set<User> nonDeletableUsers = userRepository
+                .findByNameIsInAndDeletable(Sets.newHashSet(userName), false);
+        if (nonDeletableUsers.size() != 0) {
+            User user = Iterables.getOnlyElement(nonDeletableUsers);
+            // Additional check for more detailed exception
+            Tenant tenant = tenantProvider.getCurrentTenant();
+            if (tenant.getAdminName().equals(user.getName()))
+                throw new TenantAdminNotDeletableException(user.getName(), tenant.getDomain());
+            throw new UserNotDeletableException(
+                    Iterables.getOnlyElement(nonDeletableUsers).getName());
+        }
+        // Safe to delete by name as all checks for deletable have been
+        // performed.
+        int affectedRows = userRepository.deleteByName(userName);
+        if (affectedRows == 0) {
+            throw new UserNotFoundByNameException(userName);
+        }
+    }
+
+    @Transactional(readOnly = false)
     public void addRemoveRolesOfUser(String userName, Set<String> newRoleNames,
             Set<String> removedRoleNames)
-                    throws UserNotFoundByNameException, RolesNotFoundByNameException {
+            throws UserNotFoundByNameException, RolesNotFoundByNameException {
         User user = userRepository.findOneByName(userName);
         if (user == null) {
             throw new UserNotFoundByNameException(userName);
@@ -67,7 +155,7 @@ public class UserService {
     // TODO refactor this
     public void addRemoveUsersOfRole(String roleName, Set<String> newUserNames,
             Set<String> removedUserNames)
-                    throws RoleNotFoundByNameException, UsersNotFoundByNameException {
+            throws RoleNotFoundByNameException, UsersNotFoundByNameException {
         Role role = roleRepository.findOneByName(roleName);
         if (role == null) {
             throw new RoleNotFoundByNameException(roleName);
@@ -110,68 +198,6 @@ public class UserService {
             throw new UsersNotFoundByNameException(missingUserNames);
         }
 
-    }
-
-    @Transactional(readOnly = false)
-    public User addUser(User user) throws RolesNotFoundByNameException {
-        Preconditions.checkArgument(user.getId() == null);
-        Set<String> userRoleNames = user.getRoles().stream().map(r -> r.getName())
-                .collect(Collectors.toSet());
-        Preconditions.checkArgument(userRoleNames.size() == user.getRoles().size());
-
-        Set<Role> existingRoles = roleRepository.findByNameIsIn(userRoleNames);
-        if (existingRoles.size() != user.getRoles().size()) {
-            Set<String> existingRoleNames = existingRoles.stream().map(r -> r.getName())
-                    .collect(Collectors.toSet());
-            throw new RolesNotFoundByNameException(
-                    Sets.difference(userRoleNames, existingRoleNames));
-        }
-        user.getRoles().clear();
-        user.getRoles().addAll(existingRoles);
-        return userRepository.save(user);
-    }
-
-    public User getUser(String userName) throws UserNotFoundByNameException {
-        User user = userRepository.findOneByName(userName);
-        if (user == null) {
-            throw new UserNotFoundByNameException(userName);
-        }
-        return user;
-    }
-
-    public void changePassword(String userName, String newPassword)
-            throws UserNotFoundByNameException {
-        int affectedRows = userRepository.changePassword(userName, newPassword);
-        if (affectedRows == 0) {
-            throw new UserNotFoundByNameException(userName);
-        }
-    }
-
-    public void deleteRole(String roleName) throws RoleNotFoundByNameException {
-        int affectedRows = roleRepository.deleteByName(roleName);
-        if (affectedRows == 0) {
-            throw new RoleNotFoundByNameException(roleName);
-        }
-    }
-
-    public void deleteUser(String userName) throws UserNotFoundByNameException {
-        int affectedRows = userRepository.deleteByName(userName);
-        if (affectedRows == 0) {
-            throw new UserNotFoundByNameException(userName);
-        }
-    }
-
-    public Iterable<Role> findAllRoles() {
-        return roleRepository.findAll();
-    }
-
-    public Iterable<User> findAllUsers() {
-        return userRepository.findAll();
-    }
-
-    // TODO throw an exception if role does not exist
-    public Iterable<User> getUsersOfRole(Role role) {
-        return userRepository.findByRoles_Name(role.getName());
     }
 
     public void updateRoleName(String roleName, String newRoleName)
@@ -235,6 +261,29 @@ public class UserService {
 
         public RoleNotFoundByNameException(String value) {
             super("name", value);
+        }
+    }
+
+    @Getter
+    public static class UserNotDeletableException extends IllegalEntityStateException {
+        private static final long serialVersionUID = 1184952922996631305L;
+
+        private final String userName;
+
+        public UserNotDeletableException(String userName) {
+            super(String.format("User '%s' cannot be deleted.", userName));
+            this.userName = userName;
+        }
+    }
+
+    @Getter
+    public static class TenantAdminNotDeletableException extends UserNotDeletableException {
+        private static final long serialVersionUID = 2219708808753725933L;
+        private final String tenant;
+
+        public TenantAdminNotDeletableException(String userName, String tenant) {
+            super(userName);
+            this.tenant = tenant;
         }
     }
 

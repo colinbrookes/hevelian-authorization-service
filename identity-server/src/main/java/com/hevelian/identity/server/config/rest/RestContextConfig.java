@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.users.UserService.TenantAdminNotDeletableException;
 import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
 import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
 import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
@@ -89,6 +90,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
                 .addErrorMessageHandler(TenantActiveAlreadyInStateException.class,
                         HttpStatus.CONFLICT)
                 .addErrorMessageHandler(UserNotFoundByNameException.class, HttpStatus.NOT_FOUND)
+                .addErrorMessageHandler(TenantAdminNotDeletableException.class, HttpStatus.CONFLICT)
                 .addErrorMessageHandler(RoleNotFoundByNameException.class, HttpStatus.NOT_FOUND)
                 .addErrorMessageHandler(RolesNotFoundByNameException.class, HttpStatus.NOT_FOUND)
                 .addErrorMessageHandler(AccessDeniedException.class, HttpStatus.FORBIDDEN)

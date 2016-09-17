@@ -1,6 +1,6 @@
 package com.hevelian.identity.users.api.dto;
 
-import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateRoleNameRequestDTO extends RoleRequestDTO {
-    @NotNull
+    @NotBlank
     private String newName;
 }

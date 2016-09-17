@@ -18,4 +18,12 @@ public class UserRoleUtil {
     public Set<String> rolesToNames(Set<Role> roles) {
         return roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
     }
+
+    public Set<Role> namesToRoles(Set<String> roleNames) {
+        return roleNames.stream().map(n -> {
+            Role r = new Role();
+            r.setName(n);
+            return r;
+        }).collect(Collectors.toSet());
+    }
 }

@@ -1,8 +1,6 @@
 package com.hevelian.identity.users;
 
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -22,6 +20,7 @@ import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
 import com.hevelian.identity.users.repository.RoleRepository;
 import com.hevelian.identity.users.repository.UserRepository;
+import com.hevelian.identity.users.util.UserRoleUtil;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +34,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ITenantProvider tenantProvider;
+    private final MultiUsersRoleAssignManager murAssignManager;
 
     @Transactional(readOnly = false)
     public Role addRole(Role role) {
@@ -45,16 +45,13 @@ public class UserService {
     @Transactional(readOnly = false)
     public User addUser(User user) throws RolesNotFoundByNameException {
         Preconditions.checkArgument(user.getId() == null);
-        Set<String> userRoleNames = user.getRoles().stream().map(r -> r.getName())
-                .collect(Collectors.toSet());
+        Set<String> userRoleNames = UserRoleUtil.rolesToNames(user.getRoles());
         Preconditions.checkArgument(userRoleNames.size() == user.getRoles().size());
 
         Set<Role> existingRoles = roleRepository.findByNameIsIn(userRoleNames);
         if (existingRoles.size() != user.getRoles().size()) {
-            Set<String> existingRoleNames = existingRoles.stream().map(r -> r.getName())
-                    .collect(Collectors.toSet());
             throw new RolesNotFoundByNameException(
-                    Sets.difference(userRoleNames, existingRoleNames));
+                    Sets.difference(userRoleNames, UserRoleUtil.rolesToNames(existingRoles)));
         }
         user.getRoles().clear();
         user.getRoles().addAll(existingRoles);
@@ -136,23 +133,20 @@ public class UserService {
             Role r = new Role();
             r.setName(n);
             if (!user.getRoles().remove(r)) {
-                Set<String> diff = Sets.difference(removedRoleNames, user.getRoles().stream()
-                        .map(r2 -> r2.getName()).collect(Collectors.toSet()));
-                // TODO throw more specific exception
-                throw new RolesNotFoundByNameException(diff);
+                throw new RolesNotFoundByNameException(Sets.difference(removedRoleNames,
+                        UserRoleUtil.rolesToNames(user.getRoles())));
             }
         }
 
         Set<Role> newRoles = roleRepository.findByNameIsIn(newRoleNames);
         if (newRoleNames.size() != newRoles.size()) {
-            throw new RolesNotFoundByNameException(Sets.difference(newRoleNames,
-                    newRoles.stream().map(r -> r.getName()).collect(Collectors.toSet())));
+            throw new RolesNotFoundByNameException(
+                    UserRoleUtil.getMissingRoleNames(newRoleNames, newRoles));
         }
         user.getRoles().addAll(newRoles);
         userRepository.save(user);
     }
 
-    // TODO refactor this
     public void addRemoveUsersOfRole(String roleName, Set<String> newUserNames,
             Set<String> removedUserNames)
             throws RoleNotFoundByNameException, UsersNotFoundByNameException {
@@ -161,43 +155,8 @@ public class UserService {
             throw new RoleNotFoundByNameException(roleName);
         }
 
-        Set<String> missingUserNames = new HashSet<>();
-        // TODO find a way to do this using JPA
-        removedUserNames.forEach(n -> {
-            User u = userRepository.findOneByName(n);
-            if (u == null) {
-                missingUserNames.add(n);
-            } else {
-                u.getRoles().remove(role);
-                // Save one by one instead of collectiong all to same collection
-                // and saving all at once. Maybe we will get too many names, who
-                // knows..
-                userRepository.save(u);
-            }
-        });
-
-        if (!missingUserNames.isEmpty()) {
-            throw new UsersNotFoundByNameException(missingUserNames);
-        }
-
-        // TODO find a way to do this using JPA
-        newUserNames.forEach(n -> {
-            User u = userRepository.findOneByName(n);
-            if (u == null) {
-                missingUserNames.add(n);
-            } else {
-                u.getRoles().add(role);
-                // Save one by one instead of collectiong all to same collection
-                // and saving all at once. Maybe we will get too many names, who
-                // knows..
-                userRepository.save(u);
-            }
-        });
-
-        if (!missingUserNames.isEmpty()) {
-            throw new UsersNotFoundByNameException(missingUserNames);
-        }
-
+        murAssignManager.unassignRoleFromUsers(removedUserNames, role);
+        murAssignManager.assignRoleToUsers(newUserNames, role);
     }
 
     public void updateRoleName(String roleName, String newRoleName)
@@ -217,8 +176,8 @@ public class UserService {
 
         Set<Role> newRoles = roleRepository.findByNameIsIn(newRoleNames);
         if (newRoleNames.size() != newRoles.size()) {
-            throw new RolesNotFoundByNameException(Sets.difference(newRoleNames,
-                    newRoles.stream().map(r -> r.getName()).collect(Collectors.toSet())));
+            throw new RolesNotFoundByNameException(
+                    UserRoleUtil.getMissingRoleNames(newRoleNames, newRoles));
         }
         user.getRoles().clear();
         user.getRoles().addAll(newRoles);
@@ -231,29 +190,8 @@ public class UserService {
         if (role == null) {
             throw new RoleNotFoundByNameException(roleName);
         }
-        Long roleId = role.getId();
-        roleRepository.deleteAllUsers(roleId);
-        Set<String> missingUserNames = new HashSet<>();
-        // TODO find a way to assign multiple users to some role using query.
-        // Something like this:
-        // INSERT INTO USER_ROLE(USER_ID, ROLES_ID) SELECT ID, ?1 AS
-        // ROLES_ID FROM USER WHERE USER.NAME IN (?2)
-        newUserNames.forEach(n -> {
-            User u = userRepository.findOneByName(n);
-            if (u == null) {
-                missingUserNames.add(n);
-            } else {
-                u.getRoles().add(role);
-                // Save one by one instead of collectiong all to same collection
-                // and saving all at once. Maybe we will get too many names, who
-                // knows..
-                userRepository.save(u);
-            }
-        });
-
-        if (!missingUserNames.isEmpty()) {
-            throw new UsersNotFoundByNameException(missingUserNames);
-        }
+        roleRepository.deleteAllUsers(role.getId());
+        murAssignManager.assignRoleToUsers(newUserNames, role);
     }
 
     public static class RoleNotFoundByNameException extends EntityNotFoundByCriteriaException {

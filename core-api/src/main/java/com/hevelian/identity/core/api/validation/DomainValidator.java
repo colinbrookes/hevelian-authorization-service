@@ -15,7 +15,7 @@ public class DomainValidator implements ConstraintValidator<Domain, CharSequence
 
     @Override
     public boolean isValid(CharSequence value, ConstraintValidatorContext context) {
-        if (value == null || value.length() == 0) {
+        if (value == null) {
             return true;
         }
 

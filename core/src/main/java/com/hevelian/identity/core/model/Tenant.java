@@ -10,6 +10,7 @@ import javax.persistence.PreUpdate;
 
 import org.eclipse.persistence.annotations.Index;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 
 import lombok.AccessLevel;
@@ -59,6 +60,7 @@ public class Tenant extends AbstractEntity {
     // CHANGED PROPERTIES.
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
+    @JsonIgnore
     private Boolean _initialActive;
 
     @PostLoad

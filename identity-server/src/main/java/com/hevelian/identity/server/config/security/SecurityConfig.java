@@ -51,8 +51,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // Check whether it is possible to set login URL to Spring directly.
         http.authorizeRequests()
                 .antMatchers("/api/LoginService/login", "/api/v2/api-docs", "/api/swagger-ui.html",
-                        "/api/webjars/**", "/api/swagger-resources", "/api/configuration/ui",
-                        "/api/configuration/security")
+                        "/api/webjars/**", "/api/swagger-resources",
+                        "/api/swagger-resources/configuration/ui",
+                        "/api/swagger-resources/configuration/security")
                 .permitAll().antMatchers("/console/*").hasAuthority(SystemRoles.SUPER_ADMIN)
                 .anyRequest().authenticated().and().httpBasic();
 

@@ -30,6 +30,12 @@
 			<artifactId>spring-security-csrf-token-filter</artifactId>
 			<version>1.1</version>
 		</dependency>
+		<!-- To make the @lastModifiedBy and other annotations work -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
 
 		<!-- Jackson -->
 		<!-- Support JSON Content type -->

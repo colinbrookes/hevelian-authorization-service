@@ -1,7 +1,7 @@
 package com.hevelian.identity.server.config.rest;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class SwaggerConfig {
         // Docket
         return new Docket(DocumentationType.SWAGGER_2)
                 .directModelSubstitute(LocalDate.class, java.sql.Date.class)
-                .directModelSubstitute(LocalDateTime.class, java.util.Date.class)
+                .directModelSubstitute(OffsetDateTime.class, java.util.Date.class)
                 .consumes(Sets.newHashSet(MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_XML_VALUE))
                 .produces(Sets.newHashSet(MediaType.APPLICATION_JSON_VALUE,

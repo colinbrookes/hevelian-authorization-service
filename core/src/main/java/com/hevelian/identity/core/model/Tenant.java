@@ -1,6 +1,6 @@
 package com.hevelian.identity.core.model;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,11 +33,11 @@ import lombok.Setter;
 public class Tenant extends AbstractEntity {
     @Column(nullable = false, updatable = false)
     @Setter(AccessLevel.PRIVATE)
-    private LocalDateTime dateCreated;
+    private OffsetDateTime dateCreated;
 
     @Column(nullable = false)
     @Setter(AccessLevel.PRIVATE)
-    private LocalDateTime dateActiveChanged;
+    private OffsetDateTime dateActiveChanged;
 
     @Column(nullable = false, unique = true, updatable = false)
     @Index
@@ -70,7 +70,7 @@ public class Tenant extends AbstractEntity {
 
     @PrePersist
     public void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         setDateCreated(now);
         setDateActiveChanged(now);
     }
@@ -78,7 +78,7 @@ public class Tenant extends AbstractEntity {
     @PreUpdate
     public void onUpdate() {
         if (!Objects.equal(active, _initialActive)) {
-            setDateActiveChanged(LocalDateTime.now());
+            setDateActiveChanged(OffsetDateTime.now());
             _initialActive = active;
         }
     }

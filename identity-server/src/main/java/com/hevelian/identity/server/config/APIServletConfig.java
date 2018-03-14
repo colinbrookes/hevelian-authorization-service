@@ -8,6 +8,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.hevelian.identity", includeFilters = @Filter(value = Controller.class) , useDefaultFilters = false)
+@ComponentScan(basePackages = "com.hevelian.identity",
+    includeFilters = @Filter(value = Controller.class), useDefaultFilters = false)
 public class APIServletConfig {
 }

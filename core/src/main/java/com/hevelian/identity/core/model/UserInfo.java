@@ -1,9 +1,9 @@
 package com.hevelian.identity.core.model;
 
 public interface UserInfo {
-    String getName();
+  String getName();
 
-    String getPassword();
+  String getPassword();
 
-    boolean isDeletable();
+  boolean isDeletable();
 }

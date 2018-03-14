@@ -44,12 +44,6 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
-		<!-- Support XML content type -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
 		<!-- Add-on module to support JSR-310 (Java 8 Date & Time API) data types. -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>

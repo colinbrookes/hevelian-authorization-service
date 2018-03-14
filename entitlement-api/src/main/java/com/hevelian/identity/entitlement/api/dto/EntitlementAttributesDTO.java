@@ -6,9 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EntitlementAttributesDTO {
-    private String subject;
-    private String resource;
-    private String action;
-    private String environment;
+  private String subject;
+  private String resource;
+  private String action;
+  private String environment;
 
 }

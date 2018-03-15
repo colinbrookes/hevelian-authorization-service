@@ -119,10 +119,12 @@ public class PAPService {
       if (pdpPolicy == null) {
         pdpPolicy = new PDPPolicy();
         pdpPolicy.setPolicyId(papPolicy.getPolicyId());
+        pdpPolicy.setEnabled(false);
         pdpPolicy.setPolicyOrder(0);
       }
       pdpPolicy.setContent(papPolicy.getContent());
       pdpPolicy.setPolicyType(papPolicy.getPolicyType());
+      pdpPolicy.setEnabled(enabled == null ? pdpPolicy.getEnabled() : enabled);
       pdpPolicy.setPolicyOrder(order == null ? pdpPolicy.getPolicyOrder() : order);
 
       pdpPolicies.add(pdpPolicy);

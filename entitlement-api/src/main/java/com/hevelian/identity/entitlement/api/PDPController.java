@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.Iterables;
 import com.hevelian.identity.entitlement.PDPService;
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
+import com.hevelian.identity.entitlement.api.dto.EnableDisablePolicyRequestDTO;
+import com.hevelian.identity.entitlement.api.dto.OrderPolicyRequestDTO;
 import com.hevelian.identity.entitlement.api.dto.PolicyIdDTO;
 import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,20 @@ public class PDPController {
     pdpService.deletePolicy(pdpPolicyIdDTO.getPolicyId());
   }
 
+  @RequestMapping(path = "/enableDisablePolicy", method = RequestMethod.POST)
+  public void enableDisablePolicy(
+      @Valid @RequestBody EnableDisablePolicyRequestDTO enableDisablePolicyRequestDTO)
+      throws PDPPolicyNotFoundByPolicyIdException {
+    pdpService.enableDisablePolicy(enableDisablePolicyRequestDTO.getPolicyId(),
+        enableDisablePolicyRequestDTO.getEnable());
+  }
+
+  @RequestMapping(path = "/orderPolicy", method = RequestMethod.POST)
+  public void orderPolicy(@Valid @RequestBody OrderPolicyRequestDTO orderPolicyRequestDTO)
+      throws PDPPolicyNotFoundByPolicyIdException {
+    pdpService.orderPolicy(orderPolicyRequestDTO.getPolicyId(), orderPolicyRequestDTO.getOrder());
+  }
+
   @RequestMapping(path = "/getPolicy", method = RequestMethod.POST)
   public PDPPolicy getPolicy(@Valid @RequestBody PolicyIdDTO policyIdDTO)
       throws PDPPolicyNotFoundByPolicyIdException {
@@ -37,14 +53,4 @@ public class PDPController {
   public PDPPolicy[] getAllPolicies() {
     return Iterables.toArray(pdpService.getAllPolicies(), PDPPolicy.class);
   }
-
-  // @RequestMapping(path = "/publishToPDP", method = RequestMethod.POST)
-  // public String[] unpublishPolicy(@Valid @RequestBody PublishToPDPRequestDTO
-  // publishToPDPRequestDTO)
-  // throws PAPPoliciesNotFoundByPolicyIdsException {
-  // Set<PDPPolicy> publishedPolicies =
-  // papService.publishToPDP(publishToPDPRequestDTO.getPolicyIds(),
-  // publishToPDPRequestDTO.getEnabled(), publishToPDPRequestDTO.getOrder());
-  // return publishedPolicies.stream().map(p -> p.getPolicyId()).toArray(String[]::new);
-  // }
 }

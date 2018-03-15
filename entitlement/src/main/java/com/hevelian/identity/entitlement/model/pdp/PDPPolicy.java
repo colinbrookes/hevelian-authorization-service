@@ -20,5 +20,9 @@ import lombok.Setter;
     @UniqueConstraint(columnNames = {"policyId", TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
 public class PDPPolicy extends Policy {
   @Column(nullable = false)
+  // NAme should be policyOrder, because order is a reserved word
   private Integer policyOrder = 0;
+
+  @Column(nullable = false)
+  private Boolean enabled;
 }

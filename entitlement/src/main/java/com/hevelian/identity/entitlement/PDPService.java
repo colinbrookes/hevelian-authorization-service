@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.google.common.base.Preconditions;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.entitlement.exc.PoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.exc.PolicyNotFoundByPolicyIdException;
@@ -38,6 +39,22 @@ public class PDPService {
     policyRepository.delete(policy);
   }
 
+  @Transactional(readOnly = false)
+  public void enableDisablePolicy(String policyId, boolean enable)
+      throws PDPPolicyNotFoundByPolicyIdException {
+    PDPPolicy policy = getPolicy(policyId);
+    policy.setEnabled(enable);
+    policyRepository.save(policy);
+  }
+
+  @Transactional(readOnly = false)
+  public void orderPolicy(String policyId, int order) throws PDPPolicyNotFoundByPolicyIdException {
+    Preconditions.checkArgument(order >= 0);
+    PDPPolicy policy = getPolicy(policyId);
+    policy.setPolicyOrder(order);
+    policyRepository.save(policy);
+  }
+
   public static class PDPPolicyNotFoundByPolicyIdException
       extends PolicyNotFoundByPolicyIdException {
     private static final long serialVersionUID = -5729938846638712240L;
@@ -55,5 +72,4 @@ public class PDPService {
       super(policyIds);
     }
   }
-
 }

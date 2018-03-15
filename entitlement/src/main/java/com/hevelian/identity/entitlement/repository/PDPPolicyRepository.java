@@ -4,5 +4,5 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
 
 public interface PDPPolicyRepository extends PagingAndSortingRepository<PDPPolicy, Long> {
-
+  PDPPolicy findByPolicyId(String policyId);
 }

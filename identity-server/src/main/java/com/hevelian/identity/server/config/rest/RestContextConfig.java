@@ -26,6 +26,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
+import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
+import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
+import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
 import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
@@ -84,6 +88,10 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         // box by the lib. This functionality will be revisited again
         // when we feel the need.
         .addErrorMessageHandler(PolicyParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
+        .addErrorMessageHandler(PAPPolicyNotFoundByPolicyIdException.class, HttpStatus.NOT_FOUND)
+        .addErrorMessageHandler(PAPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
+        .addErrorMessageHandler(PDPPolicyNotFoundByPolicyIdException.class, HttpStatus.NOT_FOUND)
+        .addErrorMessageHandler(PDPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(TenantActiveAlreadyInStateException.class, HttpStatus.CONFLICT)

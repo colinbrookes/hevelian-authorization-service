@@ -21,9 +21,9 @@ import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.impl.CurrentEnvModule;
 import org.wso2.balana.finder.impl.SelectorModule;
-import com.hevelian.identity.entitlement.PAPService;
+import com.hevelian.identity.entitlement.PDPService;
 import com.hevelian.identity.entitlement.ctx.RequestCtxFactory2;
-import com.hevelian.identity.entitlement.pdp.finder.InMemoryPolicyFinderModule;
+import com.hevelian.identity.entitlement.pdp.finder.PDPPolicyFinderModule;
 
 @Component
 @Scope("singleton")
@@ -32,7 +32,7 @@ public class EntitlementEngine {
   private final PDP pdp;
 
   @Autowired
-  public EntitlementEngine(PAPService papService) {
+  public EntitlementEngine(PDPService pdpService) {
     AttributeFinder attributeFinder = new AttributeFinder();
     List<AttributeFinderModule> attributeFinderModules = new ArrayList<AttributeFinderModule>();
     SelectorModule selectorModule = new SelectorModule();
@@ -43,8 +43,9 @@ public class EntitlementEngine {
 
     PolicyFinder policyFinder = new PolicyFinder();
     Set<PolicyFinderModule> policyFinderModules = new HashSet<PolicyFinderModule>();
-    InMemoryPolicyFinderModule inMemoryPolicyFinderModule =
-        new InMemoryPolicyFinderModule(papService, new DenyOverridesPolicyAlg());
+    PDPPolicyFinderModule inMemoryPolicyFinderModule =
+        // TODO retrieve policy combining algorithm from the database
+        new PDPPolicyFinderModule(pdpService, new DenyOverridesPolicyAlg());
     policyFinderModules.add(inMemoryPolicyFinderModule);
     policyFinder.setModules(policyFinderModules);
 

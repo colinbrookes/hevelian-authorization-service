@@ -1,23 +1,14 @@
 package com.hevelian.identity.entitlement.pdp.finder;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.wso2.balana.AbstractPolicy;
-import org.wso2.balana.DOMHelper;
 import org.wso2.balana.MatchResult;
-import org.wso2.balana.ParsingException;
 import org.wso2.balana.Policy;
 import org.wso2.balana.PolicyMetaData;
 import org.wso2.balana.PolicyReference;
@@ -29,39 +20,39 @@ import org.wso2.balana.ctx.Status;
 import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.PolicyFinderResult;
-import org.xml.sax.SAXException;
-import com.hevelian.identity.entitlement.PAPService;
-import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
+import com.hevelian.identity.entitlement.PDPService;
+import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
+import com.hevelian.identity.entitlement.pdp.PolicyFactory;
+import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 
 /**
- * An in-memory policy repository, in which policies are maintained in a static List.
- *
+ * A test finder module. Reloads policies on every request. Just for test purposes.
  */
-public class InMemoryPolicyFinderModule extends PolicyFinderModule {
+public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   private PolicyFinder finder = null;
   private PolicyCombiningAlgorithm combiningAlg;
-  private PAPService papService;
-  private Map<URI, AbstractPolicy> policies;
-  private static Log log = LogFactory.getLog(InMemoryPolicyFinderModule.class);
+  private PDPService pdpService;
+  private static Log log = LogFactory.getLog(PDPPolicyFinderModule.class);
 
-  /**
-   * Instantiate a repository using the specified collection of policy documents.
-   * 
-   * @param policyDocuments the list of policy documents
-   * @param combiningAlg policy combining algorithm <code>PolicyCombiningAlgorithm</code>
-   */
-  public InMemoryPolicyFinderModule(PAPService papService, PolicyCombiningAlgorithm combiningAlg) {
-    this.papService = papService;
+  public PDPPolicyFinderModule(PDPService pdpService, PolicyCombiningAlgorithm combiningAlg) {
+    this.pdpService = pdpService;
     this.combiningAlg = combiningAlg;
   }
 
-  private void reloadPolicies() {
-    policies = new HashMap<URI, AbstractPolicy>();
-    for (PAPPolicy d : papService.getAllPolicies()) {
-      AbstractPolicy p = loadPolicy(d);
-      policies.put(p.getId(), p);
+  private Map<URI, AbstractPolicy> getPolicies() {
+    Map<URI, AbstractPolicy> policies = new LinkedHashMap<URI, AbstractPolicy>();
+    for (PDPPolicy d : pdpService.getAllPolicies()) {
+      AbstractPolicy p;
+      try {
+        p = loadPolicy(d);
+        policies.put(p.getId(), p);
+      } catch (PolicyParsingException e) {
+        // just only logs
+        log.error("Failed to load policy : " + d.getPolicyId(), e);
+      }
     }
+    return policies;
   }
 
   @Override
@@ -79,12 +70,9 @@ public class InMemoryPolicyFinderModule extends PolicyFinderModule {
     return true;
   }
 
-  // TODO: Copied these 2 from the FileBasedPolicyFinderModule class; consider pulling these up into
-  // the abstract base?
-
   @Override
   public PolicyFinderResult findPolicy(EvaluationCtx context) {
-    reloadPolicies();
+    Map<URI, AbstractPolicy> policies = getPolicies();
     ArrayList<AbstractPolicy> selectedPolicies = new ArrayList<AbstractPolicy>();
     Set<Map.Entry<URI, AbstractPolicy>> entrySet = policies.entrySet();
 
@@ -132,7 +120,7 @@ public class InMemoryPolicyFinderModule extends PolicyFinderModule {
   @Override
   public PolicyFinderResult findPolicy(URI idReference, int type, VersionConstraints constraints,
       PolicyMetaData parentMetaData) {
-    reloadPolicies();
+    Map<URI, AbstractPolicy> policies = getPolicies();
     AbstractPolicy policy = policies.get(idReference);
     if (policy != null) {
       if (type == PolicyReference.POLICY_REFERENCE) {
@@ -154,36 +142,8 @@ public class InMemoryPolicyFinderModule extends PolicyFinderModule {
     return new PolicyFinderResult(status);
   }
 
-  private AbstractPolicy loadPolicy(PAPPolicy papPolicy) {
-    // based this largely on the FileBasedPolicyFinderModule implementation...strong potential for
-    // refactoring / pull-up here...
-    Document policyDocument;
-    try {
-      DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      policyDocument = db.parse(new ByteArrayInputStream(papPolicy.getContent().getBytes()));
-    } catch (SAXException | IOException | ParserConfigurationException e) {
-      // Should never occur
-      // TODO refactor
-      log.error("Fail to load policy : " + papPolicy.getId(), e);
-      throw new RuntimeException(e);
-    }
-
-    AbstractPolicy policy = null;
-    Element root = policyDocument.getDocumentElement();
-    String name = DOMHelper.getLocalName(root);
-    try {
-      if (name.equals("Policy")) {
-
-        policy = Policy.getInstance(root);
-
-      } else if (name.equals("PolicySet")) {
-        policy = PolicySet.getInstance(root, finder);
-      }
-    } catch (ParsingException e) {
-      // just only logs
-      log.error("Fail to load policy : " + policyDocument.getDocumentElement().getNodeName(), e);
-    }
-    return policy;
+  private AbstractPolicy loadPolicy(PDPPolicy pdpPolicy) throws PolicyParsingException {
+    return PolicyFactory.getFactory().getXacmlPolicy(pdpPolicy.getContent(), finder);
   }
 
 }

@@ -1,31 +1,19 @@
 package com.hevelian.identity.users.api;
 
-import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 import com.hevelian.identity.core.api.PrimitiveResult;
 import com.hevelian.identity.users.UserService;
-import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
-import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
-import com.hevelian.identity.users.UserService.UserNotDeletableException;
-import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
-import com.hevelian.identity.users.UserService.UsersNotFoundByNameException;
-import com.hevelian.identity.users.api.dto.AddRemoveUserRolesRequestDTO;
-import com.hevelian.identity.users.api.dto.AddRemoveUsersOfRoleRequestDTO;
-import com.hevelian.identity.users.api.dto.NewUserRequestDTO;
-import com.hevelian.identity.users.api.dto.RoleRequestDTO;
-import com.hevelian.identity.users.api.dto.UpdateRoleNameRequestDTO;
-import com.hevelian.identity.users.api.dto.UpdateUserRolesRequestDTO;
-import com.hevelian.identity.users.api.dto.UpdateUsersOfRoleRequestDTO;
-import com.hevelian.identity.users.api.dto.UserCredentialsRequestDTO;
-import com.hevelian.identity.users.api.dto.UserNameRequestDTO;
+import com.hevelian.identity.users.UserService.*;
+import com.hevelian.identity.users.api.dto.*;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(path = "/UserService")
@@ -89,8 +77,23 @@ public class UserController {
   }
 
   @RequestMapping(path = "/listUsers", method = RequestMethod.GET)
-  public Iterable<User> listUsers() {
-    return userService.findAllUsers();
+  public Iterable<User> listUsers(@RequestParam(name = "start", defaultValue = "0", required = false) Integer start,
+                                  @RequestParam(name = "size", defaultValue = "10", required = false) Integer size,
+                                  @RequestParam(name = "sort", required = false) String sort,
+                                  @RequestParam(name = "name", required = false) String name,
+                                  @RequestParam(name = "role", required = false) String role) {
+    Sort.Direction DIRECTION = Sort.Direction.ASC;
+    String sortAttribute = "name";
+    if (sort != null && sort.contains(" ")) {
+      String[] sortExpression = sort.split(" ");
+      sortAttribute = sortExpression[0];
+      DIRECTION = Sort.Direction.fromString(sortExpression[1]);
+    }
+    PageRequest request = new PageRequest(start, size, DIRECTION, sortAttribute);
+    if (name != null || role != null) {
+      return userService.findUsersByFilter(name, role, request);
+    }
+    return userService.getAllUsersPaginated(new PageRequest(start, size, DIRECTION, sortAttribute));
   }
 
   @RequestMapping(path = "/getRolesOfUser", method = RequestMethod.POST)

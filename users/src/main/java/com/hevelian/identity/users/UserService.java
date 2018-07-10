@@ -1,10 +1,5 @@
 package com.hevelian.identity.users;
 
-import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -21,6 +16,14 @@ import com.hevelian.identity.users.repository.UserRepository;
 import com.hevelian.identity.users.util.UserRoleUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 // Manage all transactions in service layer, where business logic occurs.
@@ -71,6 +74,21 @@ public class UserService {
     return userRepository.findAll();
   }
 
+  public Iterable<User> getAllUsersPaginated(PageRequest request) {
+    return userRepository.findAll(request);
+  }
+
+  public Iterable<User> findUsersByFilter(String name, String role, PageRequest request) {
+    if (name != null && role != null) {
+      return userRepository.findUsersByFilter(name, roleRepository.findOneByName(role), request);
+    } else if (name != null) {
+      return userRepository.findUsersByName(name, request);
+    } else if (role != null) {
+      return userRepository.findUsersByRoles(roleRepository.findOneByName(role),request);
+    }
+    return null;
+  }
+
   public Iterable<User> getUsersOfRole(Role role) throws RoleNotFoundByNameException {
     Role r = role;
     if (role.getId() == null) {
@@ -119,7 +137,7 @@ public class UserService {
 
   @Transactional(readOnly = false)
   public void addRemoveRolesOfUser(String userName, Set<String> newRoleNames,
-      Set<String> removedRoleNames)
+                                   Set<String> removedRoleNames)
       throws UserNotFoundByNameException, RolesNotFoundByNameException {
     User user = userRepository.findOneByName(userName);
     if (user == null) {
@@ -144,7 +162,7 @@ public class UserService {
   }
 
   public void addRemoveUsersOfRole(String roleName, Set<String> newUserNames,
-      Set<String> removedUserNames)
+                                   Set<String> removedUserNames)
       throws RoleNotFoundByNameException, UsersNotFoundByNameException {
     Role role = roleRepository.findOneByName(roleName);
     if (role == null) {

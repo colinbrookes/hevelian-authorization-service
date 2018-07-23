@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.data.domain.Sort;
 import org.wso2.balana.AbstractPolicy;
 import org.wso2.balana.MatchResult;
 import org.wso2.balana.Policy;
@@ -42,7 +45,8 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   private Map<URI, AbstractPolicy> getPolicies() {
     Map<URI, AbstractPolicy> policies = new LinkedHashMap<URI, AbstractPolicy>();
-    for (PDPPolicy d : pdpService.getAllPolicies()) {
+    Sort sort = new Sort(Sort.Direction.ASC, PDPPolicy.FIELD_POLICY_ORDER);
+    for (PDPPolicy d : pdpService.getAllPolicies(sort)){
       AbstractPolicy p;
       try {
         p = loadPolicy(d);

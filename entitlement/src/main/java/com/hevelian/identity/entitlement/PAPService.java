@@ -1,15 +1,5 @@
 package com.hevelian.identity.entitlement;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.wso2.balana.AbstractPolicy;
-import org.wso2.balana.Policy;
-import org.wso2.balana.PolicySet;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -25,6 +15,20 @@ import com.hevelian.identity.entitlement.repository.PAPPolicyRepository;
 import com.hevelian.identity.entitlement.repository.PDPPolicyRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.wso2.balana.AbstractPolicy;
+import org.wso2.balana.Policy;
+import org.wso2.balana.PolicySet;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -36,8 +40,8 @@ public class PAPService {
   @Getter
   private final PDPPolicyRepository pdpPolicyRepository;
 
-  public Iterable<PAPPolicy> getAllPolicies() {
-    return papPolicyRepository.findAll();
+  public Page<PAPPolicy> searchPolicies(Specification<PAPPolicy> spec, PageRequest pageRequest) {
+    return papPolicyRepository.findAll(spec,pageRequest);
   }
 
   @Transactional(readOnly = false)

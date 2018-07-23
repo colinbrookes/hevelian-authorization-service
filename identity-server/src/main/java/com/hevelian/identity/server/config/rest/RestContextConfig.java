@@ -1,6 +1,8 @@
 package com.hevelian.identity.server.config.rest;
 
 import java.util.List;
+
+import com.hevelian.identity.server.exhandler.ConstraintViolationExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +38,8 @@ import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
 import com.hevelian.identity.users.UserService.TenantAdminNotDeletableException;
 import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
 import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;
+
+import javax.validation.ConstraintViolationException;
 
 @Configuration
 @Import(SwaggerConfig.class)
@@ -87,6 +91,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         // the best place, but this is all htat is provided out of the
         // box by the lib. This functionality will be revisited again
         // when we feel the need.
+        .addHandler(ConstraintViolationException.class, new ConstraintViolationExceptionHandler())
         .addErrorMessageHandler(PolicyParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(PAPPolicyNotFoundByPolicyIdException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(PAPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)

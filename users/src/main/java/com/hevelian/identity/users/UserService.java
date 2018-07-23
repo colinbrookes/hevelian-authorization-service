@@ -17,12 +17,14 @@ import com.hevelian.identity.users.util.UserRoleUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.Set;
 
 @Service
@@ -66,27 +68,12 @@ public class UserService {
     return user;
   }
 
-  public Iterable<Role> findAllRoles() {
-    return roleRepository.findAll();
+  public Page<Role> searchRoles(Specification<Role> spec, PageRequest request) {
+    return roleRepository.findAll(spec,request);
   }
 
-  public Iterable<User> findAllUsers() {
-    return userRepository.findAll();
-  }
-
-  public Iterable<User> getAllUsersPaginated(PageRequest request) {
-    return userRepository.findAll(request);
-  }
-
-  public Iterable<User> findUsersByFilter(String name, String role, PageRequest request) {
-    if (name != null && role != null) {
-      return userRepository.findUsersByFilter(name, roleRepository.findOneByName(role), request);
-    } else if (name != null) {
-      return userRepository.findUsersByName(name, request);
-    } else if (role != null) {
-      return userRepository.findUsersByRoles(roleRepository.findOneByName(role),request);
-    }
-    return null;
+  public Page<User> searchUsers(Specification<User> spec, PageRequest request) {
+    return userRepository.findAll(spec,request);
   }
 
   public Iterable<User> getUsersOfRole(Role role) throws RoleNotFoundByNameException {
@@ -206,6 +193,10 @@ public class UserService {
     }
     roleRepository.deleteAllUsers(role.getId());
     murAssignManager.assignRoleToUsers(newUserNames, role);
+  }
+
+  public Role findRole(String name) {
+    return roleRepository.findOneByName(name);
   }
 
   public static class RoleNotFoundByNameException extends EntityNotFoundByCriteriaException {

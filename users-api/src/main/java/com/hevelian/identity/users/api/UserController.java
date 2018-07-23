@@ -1,23 +1,30 @@
 package com.hevelian.identity.users.api;
 
 import com.hevelian.identity.core.api.PrimitiveResult;
+import com.hevelian.identity.core.api.pagination.PageRequestParameters;
+import com.hevelian.identity.core.api.pagination.PageRequestParametersReader;
+import com.hevelian.identity.core.pagination.PageRequestBuilder;
+import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
 import com.hevelian.identity.users.UserService;
 import com.hevelian.identity.users.UserService.*;
 import com.hevelian.identity.users.api.dto.*;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping(path = "/UserService")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Validated
 public class UserController {
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
@@ -72,28 +79,27 @@ public class UserController {
   }
 
   @RequestMapping(path = "/listRoles", method = RequestMethod.GET)
-  public Iterable<Role> listRoles() {
-    return userService.findAllRoles();
+  public Page<Role> listRoles(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
+                              @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
+                              @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
+                              @ApiParam(value = "Role name") @RequestParam(required = false) String name) {
+    PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
+    EntitySpecificationsBuilder<Role> builder = new EntitySpecificationsBuilder<>();
+    builder.with(Role.FIELD_NAME, name);
+    return userService.searchRoles(builder.build(),pageRequestBuilder.build());
   }
 
   @RequestMapping(path = "/listUsers", method = RequestMethod.GET)
-  public Iterable<User> listUsers(@RequestParam(name = "start", defaultValue = "0", required = false) Integer start,
-                                  @RequestParam(name = "size", defaultValue = "10", required = false) Integer size,
-                                  @RequestParam(name = "sort", required = false) String sort,
-                                  @RequestParam(name = "name", required = false) String name,
-                                  @RequestParam(name = "role", required = false) String role) {
-    Sort.Direction DIRECTION = Sort.Direction.ASC;
-    String sortAttribute = "name";
-    if (sort != null && sort.contains(" ")) {
-      String[] sortExpression = sort.split(" ");
-      sortAttribute = sortExpression[0];
-      DIRECTION = Sort.Direction.fromString(sortExpression[1]);
-    }
-    PageRequest request = new PageRequest(start, size, DIRECTION, sortAttribute);
-    if (name != null || role != null) {
-      return userService.findUsersByFilter(name, role, request);
-    }
-    return userService.getAllUsersPaginated(new PageRequest(start, size, DIRECTION, sortAttribute));
+  public Page<User> listUsers(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
+                              @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
+                              @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
+                              @ApiParam(value = "User name") @RequestParam(required = false) String name,
+                              @ApiParam(value = "User enabled") @RequestParam(required = false) Boolean enabled) {
+    PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
+    EntitySpecificationsBuilder<User> builder = new EntitySpecificationsBuilder<>();
+    builder.with(User.FIELD_NAME, name);
+    builder.with(User.FIELD_ENABLED, enabled);
+    return userService.searchUsers(builder.build(), pageRequestBuilder.build());
   }
 
   @RequestMapping(path = "/getRolesOfUser", method = RequestMethod.POST)

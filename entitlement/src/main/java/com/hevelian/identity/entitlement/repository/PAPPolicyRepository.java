@@ -1,11 +1,13 @@
 package com.hevelian.identity.entitlement.repository;
 
 import java.util.Set;
+
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
 
-public interface PAPPolicyRepository extends PagingAndSortingRepository<PAPPolicy, Long> {
+public interface PAPPolicyRepository extends PagingAndSortingRepository<PAPPolicy, Long>, JpaSpecificationExecutor<PAPPolicy> {
   PAPPolicy findByPolicyId(String policyId);
 
   // Need to use the custom Query instead. See:

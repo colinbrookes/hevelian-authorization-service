@@ -1,12 +1,14 @@
 package com.hevelian.identity.users.repository;
 
-import java.util.Set;
+import com.hevelian.identity.users.model.User;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import com.hevelian.identity.users.model.User;
 
-public interface UserRepository extends PagingAndSortingRepository<User, String> {
+import java.util.Set;
+
+public interface UserRepository extends PagingAndSortingRepository<User, String>, JpaSpecificationExecutor<User> {
   User findOneByName(String userName);
 
   int deleteByName(String userName);

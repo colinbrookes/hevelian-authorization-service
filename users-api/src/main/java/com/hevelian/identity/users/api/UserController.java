@@ -1,35 +1,30 @@
 package com.hevelian.identity.users.api;
 
-import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 import com.hevelian.identity.core.api.PrimitiveResult;
+import com.hevelian.identity.core.api.pagination.PageRequestParameters;
+import com.hevelian.identity.core.api.pagination.PageRequestParametersReader;
+import com.hevelian.identity.core.pagination.PageRequestBuilder;
+import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
 import com.hevelian.identity.users.UserService;
-import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
-import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
-import com.hevelian.identity.users.UserService.UserNotDeletableException;
-import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
-import com.hevelian.identity.users.UserService.UsersNotFoundByNameException;
-import com.hevelian.identity.users.api.dto.AddRemoveUserRolesRequestDTO;
-import com.hevelian.identity.users.api.dto.AddRemoveUsersOfRoleRequestDTO;
-import com.hevelian.identity.users.api.dto.NewUserRequestDTO;
-import com.hevelian.identity.users.api.dto.RoleRequestDTO;
-import com.hevelian.identity.users.api.dto.UpdateRoleNameRequestDTO;
-import com.hevelian.identity.users.api.dto.UpdateUserRolesRequestDTO;
-import com.hevelian.identity.users.api.dto.UpdateUsersOfRoleRequestDTO;
-import com.hevelian.identity.users.api.dto.UserCredentialsRequestDTO;
-import com.hevelian.identity.users.api.dto.UserNameRequestDTO;
+import com.hevelian.identity.users.UserService.*;
+import com.hevelian.identity.users.api.dto.*;
 import com.hevelian.identity.users.model.Role;
 import com.hevelian.identity.users.model.User;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping(path = "/UserService")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Validated
 public class UserController {
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
@@ -84,13 +79,27 @@ public class UserController {
   }
 
   @RequestMapping(path = "/listRoles", method = RequestMethod.GET)
-  public Iterable<Role> listRoles() {
-    return userService.findAllRoles();
+  public Page<Role> listRoles(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
+                              @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
+                              @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
+                              @ApiParam(value = "Role name") @RequestParam(required = false) String name) {
+    PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
+    EntitySpecificationsBuilder<Role> builder = new EntitySpecificationsBuilder<>();
+    builder.with(Role.FIELD_NAME, name);
+    return userService.searchRoles(builder.build(),pageRequestBuilder.build());
   }
 
   @RequestMapping(path = "/listUsers", method = RequestMethod.GET)
-  public Iterable<User> listUsers() {
-    return userService.findAllUsers();
+  public Page<User> listUsers(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
+                              @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
+                              @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
+                              @ApiParam(value = "User name") @RequestParam(required = false) String name,
+                              @ApiParam(value = "User enabled") @RequestParam(required = false) Boolean enabled) {
+    PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
+    EntitySpecificationsBuilder<User> builder = new EntitySpecificationsBuilder<>();
+    builder.with(User.FIELD_NAME, name);
+    builder.with(User.FIELD_ENABLED, enabled);
+    return userService.searchUsers(builder.build(), pageRequestBuilder.build());
   }
 
   @RequestMapping(path = "/getRolesOfUser", method = RequestMethod.POST)

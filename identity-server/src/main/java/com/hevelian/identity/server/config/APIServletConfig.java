@@ -33,10 +33,9 @@ public class APIServletConfig {
   outside Spring Controllers.
    */
   @Bean
-  LocalValidatorFactoryBean getValidator() {
+  public LocalValidatorFactoryBean getValidator() {
     LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
     validator.setParameterNameDiscoverer(new RequestParameterNameDiscoverer());
     return validator;
-
   }
 }

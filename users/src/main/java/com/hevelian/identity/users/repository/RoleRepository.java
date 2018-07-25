@@ -1,15 +1,12 @@
 package com.hevelian.identity.users.repository;
 
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
+import com.hevelian.identity.users.model.Role;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import com.hevelian.identity.users.model.Role;
+
+import java.util.Set;
 
 public interface RoleRepository extends PagingAndSortingRepository<Role, Long>, JpaSpecificationExecutor<Role> {
 

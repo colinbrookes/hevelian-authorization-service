@@ -2,7 +2,6 @@ package com.hevelian.identity.core.api;
 
 import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
-import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;

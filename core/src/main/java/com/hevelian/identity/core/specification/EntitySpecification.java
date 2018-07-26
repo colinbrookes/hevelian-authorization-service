@@ -9,10 +9,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.Objects;
 
 /**
@@ -56,13 +53,17 @@ public class EntitySpecification<T extends AbstractEntity> implements Specificat
       } else {
         throw new NotImplementedException("Filter by type '" + javaType + "' not implemented.");
       }
-    } else if (value instanceof LocalDate && root.get(processedDateKey(key))!= null) {
+    } else if (value instanceof LocalDateTime && root.get(processedDateKey(key)) != null) {
       String dateKey = processedDateKey(key);
-      OffsetDateTime o = OffsetDateTime.of((LocalDate) value,LocalTime.NOON, ZoneOffset.UTC);
+
+      LocalDateTime localDateTime = (LocalDateTime) value;
+      ZonedDateTime zonedDateTime = ZonedDateTime.ofLocal(localDateTime, ZoneId.systemDefault(), ZoneOffset.UTC);
+      OffsetDateTime offsetDateTime = zonedDateTime.toOffsetDateTime();
+
       if (key.endsWith(FROM_DATE)) {
-        predicate = builder.greaterThanOrEqualTo(root.get(dateKey), o);
+        predicate = builder.greaterThanOrEqualTo(root.get(dateKey), offsetDateTime);
       } else if (key.endsWith(TO_DATE)) {
-        predicate = builder.lessThanOrEqualTo(root.get(dateKey), o);
+        predicate = builder.lessThan(root.get(dateKey), offsetDateTime);
       } else {
         throw new NotImplementedException("Filter by name '" + key + "' not implemented.");
       }

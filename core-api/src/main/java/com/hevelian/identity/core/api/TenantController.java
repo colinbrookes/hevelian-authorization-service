@@ -2,6 +2,7 @@ package com.hevelian.identity.core.api;
 
 import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
+import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.groups.Default;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping(path = "/TenantService")
@@ -47,7 +48,7 @@ public class TenantController {
 
   @RequestMapping(path = "/addTenant", method = RequestMethod.POST)
   public PrimitiveResult<String> addTenant(@Validated(value = {Default.class, NewTenantGroup.class})
-                                             @RequestBody TenantRequestDTO tenant) {
+                                           @RequestBody TenantRequestDTO tenant) {
     tenant.getTenantAdmin()
         .setPassword(passwordEncoder.encode(tenant.getTenantAdmin().getPassword()));
     return new PrimitiveResult<>(
@@ -81,8 +82,8 @@ public class TenantController {
                                     @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
                                     @ApiParam(value = "Domain") @RequestParam(required = false) String domain,
                                     @ApiParam(value = "Tenant is active") @RequestParam(required = false) Boolean active,
-                                    @ApiParam(value = "Date created from") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) SimpleDateFormat dateCreatedFrom,
-                                    @ApiParam(value = "Date created to") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) SimpleDateFormat dateCreatedTo) {
+                                    @ApiParam(value = "Date created from (Format: yyyy-MM-dd'T'HH:mm:ss.SSS)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateCreatedFrom,
+                                    @ApiParam(value = "Date created to (Format: yyyy-MM-dd'T'HH:mm:ss.SSS)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateCreatedTo) {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<Tenant> builder = new EntitySpecificationsBuilder<>();
     builder.with(Tenant.FIELD_DOMAIN, domain);

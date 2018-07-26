@@ -47,16 +47,16 @@ public class UserController {
   }
 
   @RequestMapping(path = "/addRole", method = RequestMethod.POST)
-  public PrimitiveResult<String> addRole(@Valid @RequestBody RoleRequestDTO role) {
-    return new PrimitiveResult<String>(userService.addRole(role.toEntity()).getName());
+  public PrimitiveResult<String> addRole(@Valid @RequestBody RoleRequestDTO role) throws RoleAlreadyExistException {
+    return new PrimitiveResult<>(userService.addRole(role.toEntity()).getName());
   }
 
   @RequestMapping(path = "/addUser", method = RequestMethod.POST)
   public PrimitiveResult<String> addUser(@Valid @RequestBody NewUserRequestDTO user)
-      throws RolesNotFoundByNameException {
+      throws RolesNotFoundByNameException, UserAlreadyExistException {
     User entity = user.toEntity();
     entity.setPassword(passwordEncoder.encode(user.getPassword()));
-    return new PrimitiveResult<String>(userService.addUser(entity).getName());
+    return new PrimitiveResult<>(userService.addUser(entity).getName());
   }
 
   @RequestMapping(path = "/changePassword", method = RequestMethod.POST)
@@ -86,7 +86,7 @@ public class UserController {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<Role> builder = new EntitySpecificationsBuilder<>();
     builder.with(Role.FIELD_NAME, name);
-    return userService.searchRoles(builder.build(),pageRequestBuilder.build());
+    return userService.searchRoles(builder.build(), pageRequestBuilder.build());
   }
 
   @RequestMapping(path = "/listUsers", method = RequestMethod.GET)

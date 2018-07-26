@@ -1,30 +1,30 @@
 package com.hevelian.identity.entitlement.api;
 
-import java.util.Set;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-
+import com.hevelian.identity.core.api.PrimitiveResult;
 import com.hevelian.identity.core.api.pagination.PageRequestParameters;
 import com.hevelian.identity.core.api.pagination.PageRequestParametersReader;
 import com.hevelian.identity.core.pagination.PageRequestBuilder;
 import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
+import com.hevelian.identity.entitlement.PAPService;
+import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
+import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
+import com.hevelian.identity.entitlement.api.dto.PAPPolicyRequestDTO;
+import com.hevelian.identity.entitlement.api.dto.PolicyIdDTO;
+import com.hevelian.identity.entitlement.api.dto.PublishToPDPRequestDTO;
 import com.hevelian.identity.entitlement.model.PolicyType;
+import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
+import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
+import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 import io.swagger.annotations.ApiParam;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import com.hevelian.identity.core.api.PrimitiveResult;
-import com.hevelian.identity.entitlement.PAPService;
-import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
-import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
-import com.hevelian.identity.entitlement.api.dto.PolicyIdDTO;
-import com.hevelian.identity.entitlement.api.dto.PAPPolicyRequestDTO;
-import com.hevelian.identity.entitlement.api.dto.PublishToPDPRequestDTO;
-import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
-import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
-import lombok.RequiredArgsConstructor;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/PAPService")
@@ -35,9 +35,9 @@ public class PAPController {
 
   @RequestMapping(path = "/addPolicy", method = RequestMethod.POST)
   public PrimitiveResult<String> addPolicy(
-      @Valid @RequestBody PAPPolicyRequestDTO popPolicyRequestDTO) throws PolicyParsingException {
+      @Valid @RequestBody PAPPolicyRequestDTO popPolicyRequestDTO) throws PolicyParsingException, PAPService.PAPPolicyAlreadyExistException {
     PAPPolicy policy = papService.addPolicy(popPolicyRequestDTO.getContent());
-    return new PrimitiveResult<String>(policy.getPolicyId());
+    return new PrimitiveResult<>(policy.getPolicyId());
   }
 
   @RequestMapping(path = "/updatePolicy", method = RequestMethod.POST)
@@ -66,11 +66,11 @@ public class PAPController {
                                         @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
                                         @ApiParam(value = "Policy id") @RequestParam(required = false) Integer policyId,
                                         @ApiParam(value = "Policy type") @RequestParam(required = false) PolicyType type) {
-    PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page,size,sort);
+    PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<PAPPolicy> spec = new EntitySpecificationsBuilder<>();
     spec.with(PAPPolicy.FIELD_POLICY_ID, policyId);
     spec.with(PAPPolicy.FIELD_POLICY_TYPE, type);
-    return papService.searchPolicies(spec.build(),pageRequestBuilder.build());
+    return papService.searchPolicies(spec.build(), pageRequestBuilder.build());
   }
 
   @RequestMapping(path = "/publishToPDP", method = RequestMethod.POST)

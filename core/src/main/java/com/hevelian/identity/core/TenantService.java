@@ -1,14 +1,8 @@
 package com.hevelian.identity.core;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.hevelian.identity.core.exc.EntityAlreadyExistException;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.model.Tenant;
@@ -16,6 +10,13 @@ import com.hevelian.identity.core.model.UserInfo;
 import com.hevelian.identity.core.repository.TenantRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -61,8 +62,12 @@ public class TenantService {
   }
 
   @Transactional
-  public Tenant addTenant(Tenant tenant, UserInfo tenantAdmin) {
-    Preconditions.checkArgument(tenant.getId() == null);
+  public Tenant addTenant(Tenant tenant, UserInfo tenantAdmin)
+      throws TenantDomainAlreadyExistException {
+    String domain = tenant.getDomain();
+    if (tenantRepository.findByDomain(domain) != null) {
+      throw new TenantDomainAlreadyExistException(domain);
+    }
     tenantRepository.save(tenant);
     tenantAdminService.createTenantAdmin(tenant, tenantAdmin);
     tenantLifecycleService.tenantCreated(tenant);
@@ -132,6 +137,16 @@ public class TenantService {
 
     public TenantNotFoundByDomainException(String tenantDomain) {
       super("tenantDomain", tenantDomain);
+    }
+  }
+
+  @Getter
+  public static class TenantDomainAlreadyExistException extends EntityAlreadyExistException {
+    private final String domain;
+
+    public TenantDomainAlreadyExistException(String domain) {
+      super(domain);
+      this.domain = domain;
     }
   }
 

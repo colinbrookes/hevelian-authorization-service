@@ -48,7 +48,7 @@ public class TenantController {
 
   @RequestMapping(path = "/addTenant", method = RequestMethod.POST)
   public PrimitiveResult<String> addTenant(@Validated(value = {Default.class, NewTenantGroup.class})
-                                           @RequestBody TenantRequestDTO tenant) {
+                                           @RequestBody TenantRequestDTO tenant) throws TenantDomainAlreadyExistException {
     tenant.getTenantAdmin()
         .setPassword(passwordEncoder.encode(tenant.getTenantAdmin().getPassword()));
     return new PrimitiveResult<>(

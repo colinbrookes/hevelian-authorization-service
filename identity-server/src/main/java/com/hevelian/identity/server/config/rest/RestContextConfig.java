@@ -1,8 +1,19 @@
 package com.hevelian.identity.server.config.rest;
 
-import java.util.List;
-
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
+import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistException;
+import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
+import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistException;
+import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
+import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
+import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
+import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 import com.hevelian.identity.server.exhandler.ConstraintViolationExceptionHandler;
+import com.hevelian.identity.users.UserService.*;
+import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -24,22 +35,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.wso2.balana.ParsingException;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
-import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
-import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
-import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
-import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
-import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
-import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
-import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
-import com.hevelian.identity.users.UserService.TenantAdminNotDeletableException;
-import com.hevelian.identity.users.UserService.UserNotFoundByNameException;
-import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;
 
 import javax.validation.ConstraintViolationException;
+import java.util.List;
 
 @Configuration
 @Import(SwaggerConfig.class)
@@ -59,7 +57,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
   @Override
   public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> resolvers) {
     resolvers.add(exceptionHandlerExceptionResolver()); // resolves
-                                                        // @ExceptionHandler
+    // @ExceptionHandler
     resolvers.add(restExceptionResolver());
   }
 
@@ -99,6 +97,10 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(PDPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
+        .addErrorMessageHandler(TenantDomainAlreadyExistException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(RoleAlreadyExistException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(UserAlreadyExistException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(PAPPolicyAlreadyExistException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(TenantActiveAlreadyInStateException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(UserNotFoundByNameException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(TenantAdminNotDeletableException.class, HttpStatus.CONFLICT)
@@ -139,6 +141,5 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
 
     registry.addResourceHandler("/webjars/**")
         .addResourceLocations("classpath:/META-INF/resources/webjars/");
-
   }
 }

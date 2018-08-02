@@ -1,9 +1,5 @@
 package com.hevelian.identity.core;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
@@ -13,6 +9,15 @@ import com.hevelian.identity.core.model.UserInfo;
 import com.hevelian.identity.core.repository.TenantRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 @Service
 @Transactional(readOnly = true)
@@ -67,6 +72,14 @@ public class TenantService {
   }
 
   @Transactional
+  public Tenant addTenantLogo(String tenantDomain, byte[] file) throws TenantNotFoundByDomainException {
+    Tenant tenant = getTenant(tenantDomain);
+    tenant.setLogo(file);
+    tenantRepository.save(tenant);
+    return tenant;
+  }
+
+  @Transactional
   public void deleteTenant(String tenantDomain) throws TenantNotFoundByDomainException {
     Tenant tenant = getTenant(tenantDomain);
     tenantRepository.delete(tenant);
@@ -78,6 +91,16 @@ public class TenantService {
     if (tenant == null)
       throw new TenantNotFoundByDomainException(tenantDomain);
     return tenant;
+  }
+
+  public BufferedImage getTenantLogo(String tenantDomain) throws TenantNotFoundByDomainException, IOException {
+    Tenant tenant = getTenant(tenantDomain);
+    byte[] logo = tenant.getLogo();
+    if (logo != null) {
+      BufferedImage img = ImageIO.read(new ByteArrayInputStream(logo));
+      return img;
+    }
+    return null;
   }
 
   @Transactional

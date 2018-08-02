@@ -1,11 +1,8 @@
 package com.hevelian.identity.core.model;
 
 import java.time.OffsetDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
+
 import org.eclipse.persistence.annotations.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -47,6 +44,12 @@ public class Tenant extends AbstractEntity {
 
   @Column(nullable = false)
   private String contactEmail;
+
+// Not all JDBC drivers support Blob locators.
+  @Lob
+  @Column(length=100000)
+  @JsonIgnore
+  private byte[] logo;
 
   @Column
   // Default length (255) should be fine

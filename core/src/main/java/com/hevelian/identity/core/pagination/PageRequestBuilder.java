@@ -19,7 +19,7 @@ public class PageRequestBuilder {
   private int page;
   private int size;
   private Sort.Direction direction;
-  private String property;
+  private String sortParameter;
 
   public PageRequestBuilder() {
     this.page = DEFAULT_PAGE;
@@ -61,13 +61,13 @@ public class PageRequestBuilder {
   }
 
   /**
-   * Set property.
+   * Set sort parameter.
    *
-   * @param property The property to sort by.
+   * @param parameter The sortParameter to sort by.
    * @return   Current builder.
    */
-  public PageRequestBuilder property(String property) {
-    this.property = property;
+  public PageRequestBuilder parameter(String parameter) {
+    this.sortParameter = parameter;
     return this;
   }
 
@@ -78,10 +78,10 @@ public class PageRequestBuilder {
    */
   public PageRequest build() {
     PageRequest pageRequest;
-    if (property == null) {
+    if (sortParameter == null) {
       pageRequest = new PageRequest(page, size);
     } else {
-      pageRequest = new PageRequest(page,size,direction,property);
+      pageRequest = new PageRequest(page,size,direction, sortParameter);
     }
     return pageRequest;
   }

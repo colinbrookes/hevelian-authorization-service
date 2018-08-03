@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-
 import lombok.experimental.FieldNameConstants;
 import org.eclipse.persistence.annotations.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,8 +26,10 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = "domain", callSuper = false)
 public class Tenant extends AbstractEntity {
+
   @Column(nullable = false, updatable = false)
   @Setter(AccessLevel.PRIVATE)
+  @FieldNameConstants
   private OffsetDateTime dateCreated;
 
   @Column(nullable = false)

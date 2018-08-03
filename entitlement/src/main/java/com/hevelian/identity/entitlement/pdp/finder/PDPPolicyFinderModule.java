@@ -38,8 +38,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   private Map<URI, AbstractPolicy> getPolicies() {
     Map<URI, AbstractPolicy> policies = new LinkedHashMap<URI, AbstractPolicy>();
-    Sort sort = new Sort(Sort.Direction.ASC, PDPPolicy.FIELD_POLICY_ORDER);
-    for (PDPPolicy d : pdpService.getAllPolicies(sort)){
+    for (PDPPolicy d : pdpService.getAllPoliciesOrdered()){
       AbstractPolicy p;
       try {
         p = loadPolicy(d);

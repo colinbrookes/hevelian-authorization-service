@@ -23,7 +23,7 @@ public class PageRequestParametersReader {
    *
    * @param page page number.
    * @param size page size.
-   * @param sort property name with direction of sorting.All spaces are trimmed.
+   * @param sort parameter name with direction of sorting.All spaces are trimmed.
    *             Samples: <ul><li>name ASC</li><li>name DESC</li><li>name</li></ul>.
    * @return {@link PageRequestBuilder} object.
    */
@@ -39,7 +39,7 @@ public class PageRequestParametersReader {
 
     SortInfo sortInfo = parseSortExpression(sort);
     if (sortInfo.property != null) {
-      builder.property(sortInfo.property);
+      builder.parameter(sortInfo.property);
     }
     if (sortInfo.direction != null) {
       builder.direction(sortInfo.direction);
@@ -51,7 +51,7 @@ public class PageRequestParametersReader {
   /**
    * Build {@link SortInfo} object from defined properties.
    *
-   * @param sort The property to sort by.
+   * @param sort the parameter to sort by.
    * return New {@link SortInfo} object.
    */
   protected SortInfo parseSortExpression(String sort) {
@@ -73,7 +73,7 @@ public class PageRequestParametersReader {
   }
 
   /**
-   *  Represents sort property with direction.
+   *  Represents sort parameter with direction.
    */
   @Getter
   @Setter

@@ -1,6 +1,5 @@
 package com.hevelian.identity.core.specification;
 
-import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.exc.NotImplementedException;
 import com.hevelian.identity.core.model.AbstractEntity;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,14 +13,14 @@ import java.time.*;
 import java.util.Objects;
 
 /**
- * Creates {@link Predicate} objects for query.
+ * Creates {@link Predicate} object by defined properties.
  *
  * @author yshymkiv
  */
 public class EntitySpecification<T extends AbstractEntity> implements Specification<T> {
-  private final static String FROM_DATE = "From";
+  public final static String FROM = "From";
+  public final static String TO = "To";
   private final static int LENGTH_STR_FROM = 4;
-  private final static String TO_DATE = "To";
   private final static int LENGTH_STR_TO = 2;
 
   private SearchCriteria criteria;
@@ -55,40 +54,36 @@ public class EntitySpecification<T extends AbstractEntity> implements Specificat
         throw new NotImplementedException("Filter by type '" + javaType + "' not implemented.");
       }
     } else {
-      try {
-        if (value instanceof LocalDateTime && root.get(processingSearchParameter(parameter)) != null) {
-          String dateParameter = processingSearchParameter(parameter);
+        if (value instanceof LocalDateTime && root.get(getDateParameterName(parameter)) != null) {
+          String dateParameter = getDateParameterName(parameter);
 
           LocalDateTime localDateTime = (LocalDateTime) value;
           ZonedDateTime zonedDateTime = ZonedDateTime.ofLocal(localDateTime, ZoneId.systemDefault(), ZoneOffset.UTC);
           OffsetDateTime offsetDateTime = zonedDateTime.toOffsetDateTime();
 
-          if (parameter.endsWith(FROM_DATE)) {
+          if (parameter.endsWith(FROM)) {
             predicate = builder.greaterThanOrEqualTo(root.get(dateParameter), offsetDateTime);
-          } else if (parameter.endsWith(TO_DATE)) {
+          } else if (parameter.endsWith(TO)) {
             predicate = builder.lessThan(root.get(dateParameter), offsetDateTime);
           } else {
             throw new NotImplementedException("Filter by name '" + parameter + "' not implemented.");
           }
         }
-      } catch (IllegalEntityStateException e) {
-        e.printStackTrace();
-      }
     }
     return predicate;
   }
 
   @NotNull
-  private String processingSearchParameter(String parameter) throws IllegalEntityStateException {
+  private String getDateParameterName(String parameter){
     int parameterLength = parameter.length();
-    String modifyParameter;
-    if (parameter.endsWith(FROM_DATE)) {
-      modifyParameter = parameter.substring(0, parameterLength - LENGTH_STR_FROM);
-    } else if (parameter.endsWith(TO_DATE)) {
-      modifyParameter = parameter.substring(0, parameterLength - LENGTH_STR_TO);
+    String parameterName;
+    if (parameter.endsWith(FROM)) {
+      parameterName = parameter.substring(0, parameterLength - LENGTH_STR_FROM);
+    } else if (parameter.endsWith(TO)) {
+      parameterName = parameter.substring(0, parameterLength - LENGTH_STR_TO);
     } else {
-      throw new IllegalEntityStateException("Incorrect date filter parameter");
+      throw new IllegalArgumentException("Incorrect date filter parameter");
     }
-    return modifyParameter;
+    return parameterName;
   }
 }

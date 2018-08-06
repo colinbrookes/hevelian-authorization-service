@@ -30,7 +30,7 @@ public class PageRequestBuilder {
   /**
    * Set page.
    *
-   * @param page Zero-based page index. Default is {@value #DEFAULT_PAGE}.
+   * @param page zero-based page index. Default is {@value #DEFAULT_PAGE}.
    * @return   Current builder.
    */
   public PageRequestBuilder page(int page) {
@@ -41,8 +41,8 @@ public class PageRequestBuilder {
   /**
    * Set size.
    *
-   * @param size The size of the page to be returned. Default is {@value #DEFAULT_SIZE}.
-   * @return   Current builder.
+   * @param size size of the page to be returned. Default is {@value #DEFAULT_SIZE}.
+   * @return   current builder.
    */
   public PageRequestBuilder size(int size) {
     this.size = size;
@@ -52,8 +52,8 @@ public class PageRequestBuilder {
   /**
    * Set direction.
    *
-   * @param direction The direction of the sort to be specified. Default is {@link #DEFAULT_DIRECTION}.
-   * @return   Current builder.
+   * @param direction direction of the sort to be specified. Default is {@link #DEFAULT_DIRECTION}.
+   * @return   current builder.
    */
   public PageRequestBuilder direction(Sort.Direction direction) {
     this.direction = direction;
@@ -63,8 +63,8 @@ public class PageRequestBuilder {
   /**
    * Set sort parameter.
    *
-   * @param parameter The sortParameter to sort by.
-   * @return   Current builder.
+   * @param parameter parameter to sort by.
+   * @return   current builder.
    */
   public PageRequestBuilder parameter(String parameter) {
     this.sortParameter = parameter;
@@ -74,7 +74,7 @@ public class PageRequestBuilder {
   /**
    * Build {@link PageRequest} object from defined properties.
    *
-   * @return New {@link PageRequest} object.
+   * @return new {@link PageRequest} object.
    */
   public PageRequest build() {
     PageRequest pageRequest;

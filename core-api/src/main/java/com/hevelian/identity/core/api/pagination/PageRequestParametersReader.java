@@ -51,8 +51,8 @@ public class PageRequestParametersReader {
   /**
    * Build {@link SortInfo} object from defined properties.
    *
-   * @param sort the parameter to sort by.
-   * return New {@link SortInfo} object.
+   * @param sort parameter to sort by.
+   * return new {@link SortInfo} object.
    */
   protected SortInfo parseSortExpression(String sort) {
     SortInfo sortInfo = new SortInfo();

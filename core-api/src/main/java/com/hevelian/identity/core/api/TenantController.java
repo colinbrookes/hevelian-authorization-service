@@ -25,6 +25,10 @@ import javax.validation.constraints.Min;
 import javax.validation.groups.Default;
 import java.time.LocalDateTime;
 
+import static com.hevelian.identity.core.model.Tenant.FIELD_DATE_CREATED;
+import static com.hevelian.identity.core.specification.EntitySpecification.FROM;
+import static com.hevelian.identity.core.specification.EntitySpecification.TO;
+
 @RestController
 @RequestMapping(path = "/TenantService")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -33,8 +37,6 @@ public class TenantController {
   private final TenantService tenantService;
   private final PasswordEncoder passwordEncoder;
 
-  private String dateCreatedFrom = Tenant.FIELD_DATE_CREATED + "From";
-  private String dateCreatedTo = Tenant.FIELD_DATE_CREATED + "To";
 
   @RequestMapping(path = "/activateTenant", method = RequestMethod.POST)
   public void activateTenant(@Valid @RequestBody TenantDomainDTO tenantDomainDTO)
@@ -92,8 +94,8 @@ public class TenantController {
     EntitySpecificationsBuilder<Tenant> builder = new EntitySpecificationsBuilder<>();
     builder.with(Tenant.FIELD_DOMAIN, domain)
         .with(Tenant.FIELD_ACTIVE, active)
-        .with(dateCreatedFrom, dateFrom)
-        .with(dateCreatedTo, dateTo);
+        .with(FIELD_DATE_CREATED + FROM, dateFrom)
+        .with(FIELD_DATE_CREATED + TO, dateTo);
     return tenantService.searchTenants(builder.build(), pageRequestBuilder.build());
   }
 }

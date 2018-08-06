@@ -24,9 +24,9 @@ public class EntitySpecificationsBuilder<T extends AbstractEntity> {
   /**
    * Creates {@link SearchCriteria} object and adds it to a List of parameters.
    *
-   * @param parameter the name of a search parameter
-   * @param value the value of a search parameter
-   * @return a list of {@link SearchCriteria} objects.
+   * @param parameter name of a search parameter
+   * @param value     value of a search parameter
+   * @return list of {@link SearchCriteria} objects.
    */
   public EntitySpecificationsBuilder with(String parameter, Object value) {
     params.add(new SearchCriteria(parameter, value));
@@ -34,7 +34,7 @@ public class EntitySpecificationsBuilder<T extends AbstractEntity> {
   }
 
   /**
-   * Builds {@link Specification} object which contains dynamic query.
+   * Builds {@link Specification} object.
    *
    * @return {@link Specification} object.
    */

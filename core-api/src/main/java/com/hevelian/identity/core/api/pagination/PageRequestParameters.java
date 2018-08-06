@@ -15,7 +15,7 @@ public final class PageRequestParameters {
 
   public static final String PAGE_DESCRIPTION = "Zero-based page index";
   public static final String SIZE_DESCRIPTION = "The size of the page to be returned";
-  public static final String SORT_DESCRIPTION = "API support sorting only by one parameter. Format: 'parameter ASC(DESC)' or without sort direction. " +
+  public static final String SORT_DESCRIPTION = "API supports sorting only by one parameter. Format: 'parameter ASC|DESC' or without sort direction. " +
                                                 "Example:'name ASC', 'order DESC', 'dateCreated'";
 
   private PageRequestParameters() {

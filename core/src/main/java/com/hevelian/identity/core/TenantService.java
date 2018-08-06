@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
+import com.hevelian.identity.core.exc.ReadImageException;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.core.model.UserInfo;
 import com.hevelian.identity.core.repository.TenantRepository;
@@ -93,14 +94,18 @@ public class TenantService {
     return tenant;
   }
 
-  public BufferedImage getTenantLogo(String tenantDomain) throws TenantNotFoundByDomainException, IOException {
+  public BufferedImage getTenantLogo(String tenantDomain) throws TenantNotFoundByDomainException {
     Tenant tenant = getTenant(tenantDomain);
     byte[] logo = tenant.getLogo();
-    if (logo != null) {
-      BufferedImage img = ImageIO.read(new ByteArrayInputStream(logo));
-      return img;
+    BufferedImage img = null;
+    try {
+      if (logo!= null) {
+        img = ImageIO.read(new ByteArrayInputStream(logo));
+      }
+    } catch (IOException e){
+      throw new ReadImageException("Error reading image from byte array input stream.", e);
     }
-    return null;
+    return img;
   }
 
   @Transactional

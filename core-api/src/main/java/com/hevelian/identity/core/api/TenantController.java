@@ -7,7 +7,7 @@ import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;
 import com.hevelian.identity.core.api.dto.TenantRequestDTO;
-import com.hevelian.identity.core.api.validation.TenantLogoValidator;
+import com.hevelian.identity.core.api.validation.constraints.Logo;
 import com.hevelian.identity.core.model.Tenant;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
@@ -18,17 +18,15 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
 import javax.validation.Valid;
 import javax.validation.groups.Default;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import static com.hevelian.identity.core.api.validation.TenantLogoValidator.imageValidator;
-
 @RestController
 @RequestMapping(path = "/TenantService")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Validated
 public class TenantController {
   private final TenantService tenantService;
   private final PasswordEncoder passwordEncoder;
@@ -54,19 +52,17 @@ public class TenantController {
         tenantService.addTenant(tenant.toEntity(), tenant.getTenantAdmin().toEntity()).getDomain());
   }
 
-  @RequestMapping(path = "/addTenantLogo", method = RequestMethod.POST)
-  public void addTenantLogo(@ApiParam(value = "Tenant domain", required = true) @RequestParam(name = "tenantDomain") String tenantDomain,
-                            @ApiParam(value = "Tenant logo", required = true) @RequestPart(name = "file") MultipartFile file) throws TenantNotFoundByDomainException,
-      TenantLogoValidator.IllegalLogoException, IOException {
-    BufferedImage buf = ImageIO.read(file.getInputStream());
-    imageValidator(buf, file.getSize());
+  @RequestMapping(path = "/setTenantLogo", method = RequestMethod.POST)
+  public void setTenantLogo(@ApiParam(value = "Tenant domain", required = true) @RequestParam String tenantDomain,
+                            @ApiParam(value = "Tenant logo", required = true) @Logo @RequestParam MultipartFile file)
+      throws TenantNotFoundByDomainException,IOException {
     tenantService.addTenantLogo(tenantDomain, file.getBytes());
   }
 
   @RequestMapping(path = "/getTenantLogo", method = RequestMethod.GET,
       produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
   public BufferedImage getTenantLogo(@ApiParam(value = "Tenant domain", required = true) @RequestParam(name = "tenantDomain") String tenantDomain)
-      throws TenantNotFoundByDomainException, IOException {
+      throws TenantNotFoundByDomainException {
     return tenantService.getTenantLogo(tenantDomain);
   }
 

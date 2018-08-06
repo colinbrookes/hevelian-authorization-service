@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
-import com.hevelian.identity.core.api.validation.TenantLogoValidator.IllegalLogoException;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+import com.hevelian.identity.server.exhandler.ConstraintViolationExceptionHandler;
 import com.hevelian.identity.users.UserService.RoleNotFoundByNameException;
 import com.hevelian.identity.users.UserService.RolesNotFoundByNameException;
 import com.hevelian.identity.users.UserService.TenantAdminNotDeletableException;
@@ -24,7 +24,6 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.BufferedImageHttpMessageConverter;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -41,12 +40,15 @@ import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExc
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.wso2.balana.ParsingException;
 
-import java.util.ArrayList;
+import javax.validation.ConstraintViolationException;
 import java.util.List;
 
 @Configuration
 @Import(SwaggerConfig.class)
 public class RestContextConfig extends WebMvcConfigurerAdapter {
+  //This number show a limit in bytes
+  private final int maxUploadFile = 1000000;
+
   @Autowired
   private ContentNegotiationManager contentNegotiationManager;
 
@@ -62,7 +64,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
   @Override
   public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> resolvers) {
     resolvers.add(exceptionHandlerExceptionResolver()); // resolves
-                                                        // @ExceptionHandler
+    // @ExceptionHandler
     resolvers.add(restExceptionResolver());
   }
 
@@ -79,7 +81,6 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
     converters
         .add(new MappingJackson2XmlHttpMessageConverter(builder.createXmlMapper(true).build()));
     converters.add(new BufferedImageHttpMessageConverter());
-    converters.add(byteArrayHttpMessageConverter());
   }
 
   // See https://github.com/jirutka/spring-rest-exception-handler for more
@@ -96,6 +97,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         // the best place, but this is all htat is provided out of the
         // box by the lib. This functionality will be revisited again
         // when we feel the need.
+        .addHandler(ConstraintViolationException.class, new ConstraintViolationExceptionHandler())
         .addErrorMessageHandler(PolicyParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(PAPPolicyNotFoundByPolicyIdException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(PAPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
@@ -106,7 +108,6 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(TenantActiveAlreadyInStateException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(UserNotFoundByNameException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(TenantAdminNotDeletableException.class, HttpStatus.CONFLICT)
-        .addErrorMessageHandler(IllegalLogoException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(RoleNotFoundByNameException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(RolesNotFoundByNameException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(AccessDeniedException.class, HttpStatus.FORBIDDEN)
@@ -150,23 +151,8 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
   @Bean
   public MultipartResolver multipartResolver() {
     CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-    multipartResolver.setMaxUploadSize(1000000);
-    multipartResolver.setDefaultEncoding(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    multipartResolver.setMaxUploadSize(maxUploadFile);
     return multipartResolver;
   }
 
-  @Bean
-  public ByteArrayHttpMessageConverter byteArrayHttpMessageConverter() {
-    ByteArrayHttpMessageConverter arrayHttpMessageConverter = new ByteArrayHttpMessageConverter();
-    arrayHttpMessageConverter.setSupportedMediaTypes(getSupportedMediaTypes());
-    return arrayHttpMessageConverter;
-  }
-
-  private List<MediaType> getSupportedMediaTypes() {
-    List<MediaType> list = new ArrayList<>();
-    list.add(MediaType.IMAGE_JPEG);
-    list.add(MediaType.IMAGE_PNG);
-    list.add(MediaType.APPLICATION_OCTET_STREAM);
-    return list;
-  }
 }

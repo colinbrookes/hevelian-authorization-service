@@ -1,29 +1,31 @@
 package com.hevelian.identity.core.model;
 
-import java.time.OffsetDateTime;
-import javax.persistence.*;
-
-import org.eclipse.persistence.annotations.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.persistence.annotations.Index;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
- * 
  * Constraint: to make the 'dateActiveChanged' work properly - update the 'active' property only via
  * the entity object.
- * 
- * @author yuflyud
  *
+ * @author yuflyud
  */
 @Entity
 @Getter
 @Setter
 @EqualsAndHashCode(of = "domain", callSuper = false)
-public class Tenant extends AbstractEntity {
+public class Tenant extends AbstractEntity
+{
+  // This characters number can save 360kB
+  private final int maxCountCharacters = 360000;
+
   @Column(nullable = false, updatable = false)
   @Setter(AccessLevel.PRIVATE)
   private OffsetDateTime dateCreated;
@@ -45,9 +47,9 @@ public class Tenant extends AbstractEntity {
   @Column(nullable = false)
   private String contactEmail;
 
-// Not all JDBC drivers support Blob locators.
+  // Not all JDBC drivers support fetch type LAZY.
   @Lob
-  @Column(length=100000)
+  @Column(length = maxCountCharacters)
   @JsonIgnore
   private byte[] logo;
 

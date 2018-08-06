@@ -21,12 +21,13 @@ public class LogoValidator implements ConstraintValidator<Logo, MultipartFile> {
   @Override
   public boolean isValid(MultipartFile multipartFile, ConstraintValidatorContext context) {
     BufferedImage bufferedImage;
+    boolean isValid = false;
     try {
       bufferedImage = ImageIO.read(new ByteArrayInputStream(multipartFile.getBytes()));
-      return (bufferedImage.getHeight() <= MAX_IMAGE_WIDTH && bufferedImage.getWidth() <= MAX_IMAGE_HEIGHT);
+      isValid = (bufferedImage.getHeight() <= MAX_IMAGE_WIDTH && bufferedImage.getWidth() <= MAX_IMAGE_HEIGHT);
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return false;
+    return isValid;
   }
 }

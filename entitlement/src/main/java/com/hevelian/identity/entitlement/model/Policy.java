@@ -24,7 +24,7 @@ public abstract class Policy extends AbstractEntity {
   @Column(nullable = false)
   private String content;
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   @FieldNameConstants
   private String policyId;
 

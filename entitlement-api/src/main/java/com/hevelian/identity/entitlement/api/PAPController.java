@@ -7,6 +7,7 @@ import com.hevelian.identity.core.pagination.PageRequestBuilder;
 import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
 import com.hevelian.identity.entitlement.PAPService;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
+import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.api.dto.PAPPolicyRequestDTO;
 import com.hevelian.identity.entitlement.api.dto.PolicyIdDTO;
@@ -35,7 +36,7 @@ public class PAPController {
 
   @RequestMapping(path = "/addPolicy", method = RequestMethod.POST)
   public PrimitiveResult<String> addPolicy(
-      @Valid @RequestBody PAPPolicyRequestDTO popPolicyRequestDTO) throws PolicyParsingException, PAPService.PAPPolicyAlreadyExistException {
+      @Valid @RequestBody PAPPolicyRequestDTO popPolicyRequestDTO) throws PolicyParsingException, PAPPolicyAlreadyExistsException {
     PAPPolicy policy = papService.addPolicy(popPolicyRequestDTO.getContent());
     return new PrimitiveResult<>(policy.getPolicyId());
   }

@@ -47,7 +47,7 @@ public class UserController {
   }
 
   @RequestMapping(path = "/addRole", method = RequestMethod.POST)
-  public PrimitiveResult<String> addRole(@Valid @RequestBody RoleRequestDTO role) throws RoleAlreadyExistException {
+  public PrimitiveResult<String> addRole(@Valid @RequestBody RoleRequestDTO role) throws RoleAlreadyExistsException {
     return new PrimitiveResult<>(userService.addRole(role.toEntity()).getName());
   }
 

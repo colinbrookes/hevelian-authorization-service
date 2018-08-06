@@ -2,7 +2,7 @@ package com.hevelian.identity.core;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.hevelian.identity.core.exc.EntityAlreadyExistException;
+import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.model.Tenant;
@@ -63,10 +63,10 @@ public class TenantService {
 
   @Transactional
   public Tenant addTenant(Tenant tenant, UserInfo tenantAdmin)
-      throws TenantDomainAlreadyExistException {
+      throws TenantDomainAlreadyExistsException {
     String domain = tenant.getDomain();
     if (tenantRepository.findByDomain(domain) != null) {
-      throw new TenantDomainAlreadyExistException(domain);
+      throw new TenantDomainAlreadyExistsException(domain);
     }
     tenantRepository.save(tenant);
     tenantAdminService.createTenantAdmin(tenant, tenantAdmin);
@@ -141,10 +141,10 @@ public class TenantService {
   }
 
   @Getter
-  public static class TenantDomainAlreadyExistException extends EntityAlreadyExistException {
+  public static class TenantDomainAlreadyExistsException extends EntityAlreadyExistsException {
     private final String domain;
 
-    public TenantDomainAlreadyExistException(String domain) {
+    public TenantDomainAlreadyExistsException(String domain) {
       super(domain);
       this.domain = domain;
     }

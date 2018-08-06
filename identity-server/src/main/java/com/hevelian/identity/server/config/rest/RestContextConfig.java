@@ -2,11 +2,11 @@ package com.hevelian.identity.server.config.rest;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
-import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
-import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistException;
+import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
@@ -97,10 +97,10 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(PDPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
-        .addErrorMessageHandler(TenantDomainAlreadyExistException.class, HttpStatus.CONFLICT)
-        .addErrorMessageHandler(RoleAlreadyExistException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(TenantService.TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(RoleAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(UserAlreadyExistException.class, HttpStatus.CONFLICT)
-        .addErrorMessageHandler(PAPPolicyAlreadyExistException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(PAPPolicyAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(TenantActiveAlreadyInStateException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(UserNotFoundByNameException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(TenantAdminNotDeletableException.class, HttpStatus.CONFLICT)

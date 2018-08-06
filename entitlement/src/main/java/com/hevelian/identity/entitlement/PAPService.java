@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.SystemRoles;
-import com.hevelian.identity.core.exc.EntityAlreadyExistException;
+import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.entitlement.exc.PoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.exc.PolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.model.PolicyType;
@@ -27,7 +27,6 @@ import org.wso2.balana.AbstractPolicy;
 import org.wso2.balana.Policy;
 import org.wso2.balana.PolicySet;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,17 +46,18 @@ public class PAPService {
   }
 
   @Transactional(readOnly = false)
-  public PAPPolicy addPolicy(String policyContent) throws PolicyParsingException, PAPPolicyAlreadyExistException {
+  public PAPPolicy addPolicy(String policyContent) throws PolicyParsingException, PAPPolicyAlreadyExistsException {
     Preconditions.checkArgument(!Strings.isNullOrEmpty(policyContent));
     PAPPolicy policy = contentToPolicy(policyContent);
     return addPolicy(policy);
   }
 
   @Transactional(readOnly = false)
-  public PAPPolicy addPolicy(PAPPolicy policy) throws PAPPolicyAlreadyExistException {
+  public PAPPolicy addPolicy(PAPPolicy policy) throws PAPPolicyAlreadyExistsException {
     String policyId = policy.getPolicyId();
-    if (!papPolicyRepository.findByPolicyIdIsIn(Collections.singleton(policy.getPolicyId())).isEmpty())
-      throw new PAPPolicyAlreadyExistException(policyId);
+    policy.getId();
+    if (papPolicyRepository.findByPolicyId(policyId) != null)
+      throw new PAPPolicyAlreadyExistsException(policyId);
     papPolicyRepository.save(policy);
     return policy;
   }
@@ -160,11 +160,11 @@ public class PAPService {
   }
 
   @Getter
-  public static class PAPPolicyAlreadyExistException
-      extends EntityAlreadyExistException {
+  public static class PAPPolicyAlreadyExistsException
+      extends EntityAlreadyExistsException {
     private String policyId;
 
-    public PAPPolicyAlreadyExistException(String policyId) {
+    public PAPPolicyAlreadyExistsException(String policyId) {
       super(policyId);
       this.policyId = policyId;
     }

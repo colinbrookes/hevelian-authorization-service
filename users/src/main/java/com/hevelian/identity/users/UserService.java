@@ -6,7 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.ITenantProvider;
 import com.hevelian.identity.core.SystemRoles;
-import com.hevelian.identity.core.exc.EntityAlreadyExistException;
+import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.model.Tenant;
@@ -39,10 +39,10 @@ public class UserService {
   private final MultiUsersRoleAssignManager murAssignManager;
 
   @Transactional(readOnly = false)
-  public Role addRole(Role role) throws RoleAlreadyExistException {
+  public Role addRole(Role role) throws RoleAlreadyExistsException {
     String roleName = role.getName();
     if (roleRepository.findOneByName(roleName) != null)
-      throw new RoleAlreadyExistException(roleName);
+      throw new RoleAlreadyExistsException(roleName);
     return roleRepository.save(role);
   }
 
@@ -251,17 +251,17 @@ public class UserService {
   }
 
   @Getter
-  public static class RoleAlreadyExistException extends EntityAlreadyExistException {
+  public static class RoleAlreadyExistsException extends EntityAlreadyExistsException {
     private String name;
 
-    public RoleAlreadyExistException(String roleName) {
+    public RoleAlreadyExistsException(String roleName) {
       super(roleName);
       this.name = roleName;
     }
   }
 
   @Getter
-  public static class UserAlreadyExistException extends EntityAlreadyExistException {
+  public static class UserAlreadyExistException extends EntityAlreadyExistsException {
     private String name;
 
     public UserAlreadyExistException(String userName) {

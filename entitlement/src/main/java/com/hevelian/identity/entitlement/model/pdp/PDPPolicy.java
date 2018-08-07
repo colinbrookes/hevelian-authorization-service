@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+
+import lombok.experimental.FieldNameConstants;
 import org.eclipse.persistence.annotations.Multitenant;
 import org.eclipse.persistence.annotations.MultitenantType;
 import org.eclipse.persistence.internal.jpa.metadata.columns.TenantDiscriminatorColumnMetadata;
@@ -20,9 +22,11 @@ import lombok.Setter;
     @UniqueConstraint(columnNames = {"policyId", TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
 public class PDPPolicy extends Policy {
   @Column(nullable = false)
+  @FieldNameConstants
   // NAme should be policyOrder, because order is a reserved word
   private Integer policyOrder = 0;
 
   @Column(nullable = false)
+  @FieldNameConstants
   private Boolean enabled;
 }

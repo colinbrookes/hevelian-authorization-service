@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import lombok.experimental.FieldNameConstants;
 import org.eclipse.persistence.annotations.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -15,20 +16,20 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 
  * Constraint: to make the 'dateActiveChanged' work properly - update the 'active' property only via
  * the entity object.
- * 
- * @author yuflyud
  *
+ * @author yuflyud
  */
 @Entity
 @Getter
 @Setter
 @EqualsAndHashCode(of = "domain", callSuper = false)
 public class Tenant extends AbstractEntity {
+
   @Column(nullable = false, updatable = false)
   @Setter(AccessLevel.PRIVATE)
+  @FieldNameConstants
   private OffsetDateTime dateCreated;
 
   @Column(nullable = false)
@@ -37,9 +38,11 @@ public class Tenant extends AbstractEntity {
 
   @Column(nullable = false, unique = true, updatable = false)
   @Index
+  @FieldNameConstants
   private String domain;
 
   @Column(nullable = false)
+  @FieldNameConstants
   private Boolean active;
 
   @Column(nullable = false, updatable = false)

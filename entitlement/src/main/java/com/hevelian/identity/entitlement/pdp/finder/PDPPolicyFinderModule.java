@@ -1,29 +1,24 @@
 package com.hevelian.identity.entitlement.pdp.finder;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import com.hevelian.identity.entitlement.PDPService;
+import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
+import com.hevelian.identity.entitlement.pdp.PolicyFactory;
+import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.balana.AbstractPolicy;
-import org.wso2.balana.MatchResult;
-import org.wso2.balana.Policy;
-import org.wso2.balana.PolicyMetaData;
-import org.wso2.balana.PolicyReference;
-import org.wso2.balana.PolicySet;
-import org.wso2.balana.VersionConstraints;
+import org.wso2.balana.*;
 import org.wso2.balana.combine.PolicyCombiningAlgorithm;
 import org.wso2.balana.ctx.EvaluationCtx;
 import org.wso2.balana.ctx.Status;
 import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.PolicyFinderResult;
-import com.hevelian.identity.entitlement.PDPService;
-import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
-import com.hevelian.identity.entitlement.pdp.PolicyFactory;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A test finder module. Reloads policies on every request. Just for test purposes.
@@ -42,7 +37,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   private Map<URI, AbstractPolicy> getPolicies() {
     Map<URI, AbstractPolicy> policies = new LinkedHashMap<URI, AbstractPolicy>();
-    for (PDPPolicy d : pdpService.getAllPolicies()) {
+    for (PDPPolicy d : pdpService.getAllPoliciesOrdered()){
       AbstractPolicy p;
       try {
         p = loadPolicy(d);

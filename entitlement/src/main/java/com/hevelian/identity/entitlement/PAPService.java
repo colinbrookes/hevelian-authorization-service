@@ -54,10 +54,10 @@ public class PAPService {
 
   @Transactional(readOnly = false)
   public PAPPolicy addPolicy(PAPPolicy policy) throws PAPPolicyAlreadyExistsException {
-    String policyId = policy.getPolicyId();
-    policy.getId();
-    if (papPolicyRepository.findByPolicyId(policyId) != null)
-      throw new PAPPolicyAlreadyExistsException(policyId);
+    Preconditions.checkArgument(policy.getId() == null);
+    if (papPolicyRepository.findByPolicyId(policy.getPolicyId()) != null) {
+      throw new PAPPolicyAlreadyExistsException(policy.getPolicyId());
+    }
     papPolicyRepository.save(policy);
     return policy;
   }
@@ -160,12 +160,12 @@ public class PAPService {
   }
 
   @Getter
-  public static class PAPPolicyAlreadyExistsException
-      extends EntityAlreadyExistsException {
+  public static class PAPPolicyAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = 2993478084039111761L;
     private String policyId;
 
     public PAPPolicyAlreadyExistsException(String policyId) {
-      super(policyId);
+      super(String.format("Policy with id '%s' already exists in PAP.", policyId));
       this.policyId = policyId;
     }
   }

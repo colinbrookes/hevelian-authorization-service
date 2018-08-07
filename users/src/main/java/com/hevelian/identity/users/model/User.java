@@ -27,7 +27,7 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = "name", callSuper = false)
 @Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"name", TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
+    @UniqueConstraint(columnNames = {User.FIELD_NAME, TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
 public class User extends AbstractEntity implements UserInfo {
 
   // No unique constraint on name because of

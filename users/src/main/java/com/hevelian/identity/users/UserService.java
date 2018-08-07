@@ -40,17 +40,19 @@ public class UserService {
 
   @Transactional(readOnly = false)
   public Role addRole(Role role) throws RoleAlreadyExistsException {
-    String roleName = role.getName();
-    if (roleRepository.findOneByName(roleName) != null)
-      throw new RoleAlreadyExistsException(roleName);
+    Preconditions.checkArgument(role.getId() == null);
+    if (roleRepository.findOneByName(role.getName()) != null) {
+      throw new RoleAlreadyExistsException(role.getName());
+    }
     return roleRepository.save(role);
   }
 
   @Transactional(readOnly = false)
-  public User addUser(User user) throws RolesNotFoundByNameException, UserAlreadyExistException {
-    String userName = user.getName();
-    if (userRepository.findOneByName(userName) != null)
-      throw new UserAlreadyExistException(userName);
+  public User addUser(User user) throws RolesNotFoundByNameException, UserAlreadyExistsException {
+    Preconditions.checkArgument(user.getId() == null);
+    if (userRepository.findOneByName(user.getName()) != null) {
+      throw new UserAlreadyExistsException(user.getName());
+    }
     Set<String> userRoleNames = UserRoleUtil.rolesToNames(user.getRoles());
     Preconditions.checkArgument(userRoleNames.size() == user.getRoles().size());
 
@@ -252,20 +254,22 @@ public class UserService {
 
   @Getter
   public static class RoleAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = 7876155596672097441L;
     private String name;
 
     public RoleAlreadyExistsException(String roleName) {
-      super(roleName);
+      super(String.format("Role with name '%s' already exists.", roleName));
       this.name = roleName;
     }
   }
 
   @Getter
-  public static class UserAlreadyExistException extends EntityAlreadyExistsException {
+  public static class UserAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = -3649682459320300296L;
     private String name;
 
-    public UserAlreadyExistException(String userName) {
-      super(userName);
+    public UserAlreadyExistsException(String userName) {
+      super(String.format("User with name '%s' already exists.", userName));
       this.name = userName;
     }
   }

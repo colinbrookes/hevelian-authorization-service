@@ -64,9 +64,9 @@ public class TenantService {
   @Transactional
   public Tenant addTenant(Tenant tenant, UserInfo tenantAdmin)
       throws TenantDomainAlreadyExistsException {
-    String domain = tenant.getDomain();
-    if (tenantRepository.findByDomain(domain) != null) {
-      throw new TenantDomainAlreadyExistsException(domain);
+    Preconditions.checkArgument(tenant.getId() == null);
+    if (tenantRepository.findByDomain(tenant.getDomain()) != null) {
+      throw new TenantDomainAlreadyExistsException(tenant.getDomain());
     }
     tenantRepository.save(tenant);
     tenantAdminService.createTenantAdmin(tenant, tenantAdmin);
@@ -126,7 +126,7 @@ public class TenantService {
 
     public TenantActiveAlreadyInStateException(boolean active) {
       super(String.format(
-          "The tenant active state cannot be set to '%s' because it is already the current state.",
+          "Tenant active state cannot be set to '%s' because it is already the current state.",
           active));
       this.active = active;
     }
@@ -142,15 +142,16 @@ public class TenantService {
 
   @Getter
   public static class TenantDomainAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = 8110389360008261638L;
     private final String domain;
 
     public TenantDomainAlreadyExistsException(String domain) {
-      super(domain);
+      super(String.format("Tenant with domain '%s' already exists.", domain));
       this.domain = domain;
     }
   }
 
-  public static interface TenantAdminService {
+  public interface TenantAdminService {
     void createTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
 
     void updateTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
@@ -158,7 +159,7 @@ public class TenantService {
     void deleteTenantAdmin(Tenant tenant);
   }
 
-  public static interface TenantLifecycleService {
+  public interface TenantLifecycleService {
     void tenantCreated(Tenant tenant);
 
     void tenantDeleted(Tenant tenant);

@@ -53,7 +53,7 @@ public class UserController {
 
   @RequestMapping(path = "/addUser", method = RequestMethod.POST)
   public PrimitiveResult<String> addUser(@Valid @RequestBody NewUserRequestDTO user)
-      throws RolesNotFoundByNameException, UserAlreadyExistException {
+      throws RolesNotFoundByNameException, UserAlreadyExistsException {
     User entity = user.toEntity();
     entity.setPassword(passwordEncoder.encode(user.getPassword()));
     return new PrimitiveResult<>(userService.addUser(entity).getName());

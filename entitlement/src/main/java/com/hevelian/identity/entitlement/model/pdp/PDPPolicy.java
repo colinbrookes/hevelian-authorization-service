@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 // See comments in User class.
 @Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"policyId", TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
+    @UniqueConstraint(columnNames = {Policy.FIELD_POLICY_ID, TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
 public class PDPPolicy extends Policy {
   @Column(nullable = false)
   @FieldNameConstants

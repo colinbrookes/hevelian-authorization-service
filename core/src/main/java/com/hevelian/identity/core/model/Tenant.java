@@ -25,7 +25,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@EqualsAndHashCode(of = "domain", callSuper = false)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Tenant extends AbstractEntity {
   @Column(nullable = false, updatable = false)
   @Setter(AccessLevel.PRIVATE)
@@ -38,6 +38,7 @@ public class Tenant extends AbstractEntity {
   @Column(nullable = false, unique = true, updatable = false)
   @Index
   @FieldNameConstants
+  @EqualsAndHashCode.Include
   private String domain;
 
   @Column(nullable = false)

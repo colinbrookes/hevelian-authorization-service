@@ -99,7 +99,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(TenantService.TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(RoleAlreadyExistsException.class, HttpStatus.CONFLICT)
-        .addErrorMessageHandler(UserAlreadyExistException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(UserAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(PAPPolicyAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(TenantActiveAlreadyInStateException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(UserNotFoundByNameException.class, HttpStatus.NOT_FOUND)

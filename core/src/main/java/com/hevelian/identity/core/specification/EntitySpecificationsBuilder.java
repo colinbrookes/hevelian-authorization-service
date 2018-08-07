@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Builder of {@link Specification} objects and creates dynamic query.
+ * Builds {@link Specification} objects.
  *
  * @author yshymkiv
  */
@@ -22,21 +22,21 @@ public class EntitySpecificationsBuilder<T extends AbstractEntity> {
   }
 
   /**
-   * Creates {@link SearchCriteria} object and adds him to List parameters.
+   * Creates {@link SearchCriteria} object and adds it to a List of parameters.
    *
-   * @param key   the name of search parameters
-   * @param value search parameters value
-   * @return {@link EntitySpecificationsBuilder} object with search parameters list.
+   * @param parameter name of a search parameter
+   * @param value     value of a search parameter
+   * @return list of {@link SearchCriteria} objects.
    */
-  public EntitySpecificationsBuilder with(String key, Object value) {
-    params.add(new SearchCriteria(key, value));
+  public EntitySpecificationsBuilder with(String parameter, Object value) {
+    params.add(new SearchCriteria(parameter, value));
     return this;
   }
 
   /**
-   * This method builds dynamic query from {@link SearchCriteria} objects.
+   * Builds {@link Specification} object.
    *
-   * @return {@link Specification} object .
+   * @return {@link Specification} object.
    */
   public Specification<T> build() {
 

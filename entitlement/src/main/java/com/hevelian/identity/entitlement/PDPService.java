@@ -26,7 +26,8 @@ public class PDPService {
   @Getter
   private final PDPPolicyRepository policyRepository;
 
-  public Iterable<PDPPolicy> getAllPolicies(Sort sort) {
+  public Iterable<PDPPolicy> getAllPoliciesOrdered() {
+    Sort sort = new Sort(Sort.Direction.ASC, PDPPolicy.FIELD_POLICY_ORDER);
       return policyRepository.findAll(sort);
   }
 

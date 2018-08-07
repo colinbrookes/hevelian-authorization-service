@@ -6,7 +6,6 @@ import com.hevelian.identity.entitlement.pdp.PolicyFactory;
 import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.data.domain.Sort;
 import org.wso2.balana.*;
 import org.wso2.balana.combine.PolicyCombiningAlgorithm;
 import org.wso2.balana.ctx.EvaluationCtx;
@@ -38,8 +37,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   private Map<URI, AbstractPolicy> getPolicies() {
     Map<URI, AbstractPolicy> policies = new LinkedHashMap<URI, AbstractPolicy>();
-    Sort sort = new Sort(Sort.Direction.ASC, PDPPolicy.FIELD_POLICY_ORDER);
-    for (PDPPolicy d : pdpService.getAllPolicies(sort)){
+    for (PDPPolicy d : pdpService.getAllPoliciesOrdered()){
       AbstractPolicy p;
       try {
         p = loadPolicy(d);

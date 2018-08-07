@@ -94,7 +94,7 @@ public class UserController {
                               @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
                               @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
                               @ApiParam(value = "User name") @RequestParam(required = false) String name,
-                              @ApiParam(value = "User enabled") @RequestParam(required = false) Boolean enabled) {
+                              @ApiParam(value = "User is enabled") @RequestParam(required = false) Boolean enabled) {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<User> builder = new EntitySpecificationsBuilder<>();
     builder.with(User.FIELD_NAME, name);

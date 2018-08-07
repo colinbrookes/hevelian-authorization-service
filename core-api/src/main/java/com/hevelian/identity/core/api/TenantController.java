@@ -26,6 +26,10 @@ import javax.validation.constraints.Min;
 import javax.validation.groups.Default;
 import java.time.LocalDateTime;
 
+import static com.hevelian.identity.core.model.Tenant.FIELD_DATE_CREATED;
+import static com.hevelian.identity.core.specification.EntitySpecification.FROM;
+import static com.hevelian.identity.core.specification.EntitySpecification.TO;
+
 @RestController
 @RequestMapping(path = "/TenantService")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -33,6 +37,7 @@ import java.time.LocalDateTime;
 public class TenantController {
   private final TenantService tenantService;
   private final PasswordEncoder passwordEncoder;
+
 
   @RequestMapping(path = "/activateTenant", method = RequestMethod.POST)
   public void activateTenant(@Valid @RequestBody TenantDomainDTO tenantDomainDTO)
@@ -82,14 +87,16 @@ public class TenantController {
                                     @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
                                     @ApiParam(value = "Domain") @RequestParam(required = false) String domain,
                                     @ApiParam(value = "Tenant is active") @RequestParam(required = false) Boolean active,
-                                    @ApiParam(value = "Date created from (Format: yyyy-MM-dd'T'HH:mm:ss.SSS)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateCreatedFrom,
-                                    @ApiParam(value = "Date created to (Format: yyyy-MM-dd'T'HH:mm:ss.SSS)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateCreatedTo) {
+                                    @ApiParam(value = "Date created from (including entered time).API uses UTC time zone. Format: yyyy-MM-dd'T'HH:mm:ss.SSS")
+                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
+                                    @ApiParam(value = "Date created to (excluding entered time).API uses UTC time zone. Format: yyyy-MM-dd'T'HH:mm:ss.SSS")
+                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<Tenant> builder = new EntitySpecificationsBuilder<>();
-    builder.with(Tenant.FIELD_DOMAIN, domain);
-    builder.with(Tenant.FIELD_ACTIVE, active);
-    builder.with(TenantFilterAttribute.DATE_CREATED_FROM, dateCreatedFrom);
-    builder.with(TenantFilterAttribute.DATE_CREATED_TO, dateCreatedTo);
+    builder.with(Tenant.FIELD_DOMAIN, domain)
+        .with(Tenant.FIELD_ACTIVE, active)
+        .with(FIELD_DATE_CREATED + FROM, dateFrom)
+        .with(FIELD_DATE_CREATED + TO, dateTo);
     return tenantService.searchTenants(builder.build(), pageRequestBuilder.build());
   }
 }

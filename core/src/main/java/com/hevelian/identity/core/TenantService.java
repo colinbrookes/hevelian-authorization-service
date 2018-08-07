@@ -2,6 +2,7 @@ package com.hevelian.identity.core;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.exc.ReadImageException;
@@ -11,6 +12,9 @@ import com.hevelian.identity.core.repository.TenantRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,8 +68,12 @@ public class TenantService {
   }
 
   @Transactional
-  public Tenant addTenant(Tenant tenant, UserInfo tenantAdmin) {
+  public Tenant addTenant(Tenant tenant, UserInfo tenantAdmin)
+      throws TenantDomainAlreadyExistsException {
     Preconditions.checkArgument(tenant.getId() == null);
+    if (tenantRepository.findByDomain(tenant.getDomain()) != null) {
+      throw new TenantDomainAlreadyExistsException(tenant.getDomain());
+    }
     tenantRepository.save(tenant);
     tenantAdminService.createTenantAdmin(tenant, tenantAdmin);
     tenantLifecycleService.tenantCreated(tenant);
@@ -135,8 +143,8 @@ public class TenantService {
     return tenantEntity;
   }
 
-  public Iterable<Tenant> getAllTenants() {
-    return tenantRepository.findAll();
+  public Page<Tenant> searchTenants(Specification<Tenant> spec, PageRequest request) {
+    return tenantRepository.findAll(spec, request);
   }
 
   @Getter
@@ -146,7 +154,7 @@ public class TenantService {
 
     public TenantActiveAlreadyInStateException(boolean active) {
       super(String.format(
-          "The tenant active state cannot be set to '%s' because it is already the current state.",
+          "Tenant active state cannot be set to '%s' because it is already the current state.",
           active));
       this.active = active;
     }
@@ -160,7 +168,18 @@ public class TenantService {
     }
   }
 
-  public static interface TenantAdminService {
+  @Getter
+  public static class TenantDomainAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = 8110389360008261638L;
+    private final String domain;
+
+    public TenantDomainAlreadyExistsException(String domain) {
+      super(String.format("Tenant with domain '%s' already exists.", domain));
+      this.domain = domain;
+    }
+  }
+
+  public interface TenantAdminService {
     void createTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
 
     void updateTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
@@ -168,7 +187,7 @@ public class TenantService {
     void deleteTenantAdmin(Tenant tenant);
   }
 
-  public static interface TenantLifecycleService {
+  public interface TenantLifecycleService {
     void tenantCreated(Tenant tenant);
 
     void tenantDeleted(Tenant tenant);

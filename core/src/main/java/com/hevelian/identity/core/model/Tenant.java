@@ -1,15 +1,21 @@
 package com.hevelian.identity.core.model;
 
+import java.time.OffsetDateTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import lombok.experimental.FieldNameConstants;
+import org.eclipse.persistence.annotations.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.persistence.annotations.Index;
 
 import javax.persistence.*;
-import java.time.OffsetDateTime;
 
 /**
  * Constraint: to make the 'dateActiveChanged' work properly - update the 'active' property only via
@@ -28,6 +34,7 @@ public class Tenant extends AbstractEntity
 
   @Column(nullable = false, updatable = false)
   @Setter(AccessLevel.PRIVATE)
+  @FieldNameConstants
   private OffsetDateTime dateCreated;
 
   @Column(nullable = false)
@@ -36,9 +43,11 @@ public class Tenant extends AbstractEntity
 
   @Column(nullable = false, unique = true, updatable = false)
   @Index
+  @FieldNameConstants
   private String domain;
 
   @Column(nullable = false)
+  @FieldNameConstants
   private Boolean active;
 
   @Column(nullable = false, updatable = false)

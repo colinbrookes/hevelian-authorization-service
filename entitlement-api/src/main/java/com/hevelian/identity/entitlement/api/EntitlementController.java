@@ -22,13 +22,13 @@ public class EntitlementController {
   @RequestMapping(path = "/getDecision", method = RequestMethod.POST)
   public PrimitiveResult<String> getDecision(@Valid @RequestBody EntitlementRequestDTO request)
       throws ParsingException {
-    return new PrimitiveResult<String>(entitlementService.getDecision(request.getRequest()));
+    return new PrimitiveResult<>(entitlementService.getDecision(request.getRequest()));
   }
 
   @RequestMapping(path = "/getDecisionByAttributes", method = RequestMethod.POST)
   public PrimitiveResult<String> getDecisionByAttributes(
       @Valid @RequestBody EntitlementAttributesDTO attributes) throws ParsingException {
-    return new PrimitiveResult<String>(
+    return new PrimitiveResult<>(
         entitlementService.getDecisionByAttributes(attributes.getSubject(),
             attributes.getResource(), attributes.getAction(), attributes.getEnvironment()));
   }
@@ -36,7 +36,7 @@ public class EntitlementController {
   @RequestMapping(path = "/getBooleanDecision", method = RequestMethod.POST)
   public PrimitiveResult<Boolean> getBooleanDecision(
       @Valid @RequestBody EntitlementAttributesDTO attributes) throws ParsingException {
-    return new PrimitiveResult<Boolean>(
+    return new PrimitiveResult<>(
         entitlementService.getBooleanDecision(attributes.getSubject(), attributes.getResource(),
             attributes.getAction(), attributes.getEnvironment()));
   }

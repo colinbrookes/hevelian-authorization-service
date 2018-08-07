@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * Modifications copyright (C) 2018 Hevelian.
  * NOTICE: This class is an adapted version of
@@ -42,8 +43,11 @@ import java.lang.reflect.Method;
  * through {@link DefaultParameterNameDiscoverer}.
  */
 public class RequestParameterNameDiscoverer implements ParameterNameDiscoverer {
+
   private final DefaultParameterNameDiscoverer discoverer;
+
   private final ParameterNameFactory<Constructor<?>> constructorParamFactory = new ParameterNameFactory<Constructor<?>>() {
+
     public Annotation[][] findParameterAnnotations(Constructor<?> constructor) {
       return constructor.getParameterAnnotations();
     }
@@ -53,7 +57,9 @@ public class RequestParameterNameDiscoverer implements ParameterNameDiscoverer {
       return discoverer.getParameterNames(constructor);
     }
   };
+
   private final ParameterNameFactory<Method> methodParamFactory = new ParameterNameFactory<Method>() {
+
     public Annotation[][] findParameterAnnotations(Method method) {
       return method.getParameterAnnotations();
     }
@@ -159,6 +165,7 @@ public class RequestParameterNameDiscoverer implements ParameterNameDiscoverer {
    * @param <T> The type to inspect (i.e. {@link Method} or {@link Constructor})
    */
   private interface ParameterNameFactory<T extends AccessibleObject> {
+
     /**
      * Gets the {@link Annotation}s at a specified index.
      *

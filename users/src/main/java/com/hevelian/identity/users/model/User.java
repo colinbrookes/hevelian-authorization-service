@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+
+import lombok.experimental.FieldNameConstants;
 import org.eclipse.persistence.annotations.Index;
 import org.eclipse.persistence.annotations.Multitenant;
 import org.eclipse.persistence.annotations.MultitenantType;
@@ -25,13 +27,14 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = "name", callSuper = false)
 @Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"name", TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
+    @UniqueConstraint(columnNames = {User.FIELD_NAME, TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
 public class User extends AbstractEntity implements UserInfo {
 
   // No unique constraint on name because of
   // https://bugs.eclipse.org/bugs/show_bug.cgi?id=499504
   @Column(nullable = false)
   @Index
+  @FieldNameConstants
   private String name;
 
   @Column(nullable = false)
@@ -40,6 +43,7 @@ public class User extends AbstractEntity implements UserInfo {
   private String password;
 
   @Column(nullable = false)
+  @FieldNameConstants
   private Boolean enabled;
 
   @ManyToMany

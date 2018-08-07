@@ -1,23 +1,30 @@
 package com.hevelian.identity.entitlement.api;
 
-import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import com.google.common.collect.Iterables;
+import com.hevelian.identity.core.api.pagination.PageRequestParameters;
+import com.hevelian.identity.core.api.pagination.PageRequestParametersReader;
+import com.hevelian.identity.core.pagination.PageRequestBuilder;
+import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
 import com.hevelian.identity.entitlement.PDPService;
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.api.dto.EnableDisablePolicyRequestDTO;
 import com.hevelian.identity.entitlement.api.dto.OrderPolicyRequestDTO;
 import com.hevelian.identity.entitlement.api.dto.PolicyIdDTO;
+import com.hevelian.identity.entitlement.model.PolicyType;
 import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping(path = "/PDPService")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Validated
 public class PDPController {
   private final PDPService pdpService;
 
@@ -47,10 +54,20 @@ public class PDPController {
     return pdpService.getPolicy(policyIdDTO.getPolicyId());
   }
 
-  // TODO pagination. Also maybe this method should not return content. It can be returned by
+  // TODO Maybe this method should not return content. It can be returned by
   // getPolicy or getPolicyContent
   @RequestMapping(path = "/getAllPolicies", method = RequestMethod.GET)
-  public PDPPolicy[] getAllPolicies() {
-    return Iterables.toArray(pdpService.getAllPolicies(), PDPPolicy.class);
+  public Page<PDPPolicy> getAllPolicies(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
+                                        @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
+                                        @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
+                                        @ApiParam(value = "Policy id") @RequestParam(required = false) Integer policyId,
+                                        @ApiParam(value = "Policy type") @RequestParam(required = false) PolicyType type,
+                                        @ApiParam(value = "Policy is enabled") @RequestParam(required = false) Boolean enabled) {
+    PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page,size,sort);
+    EntitySpecificationsBuilder<PDPPolicy> spec = new EntitySpecificationsBuilder<>();
+    spec.with(PDPPolicy.FIELD_POLICY_ID, policyId);
+    spec.with(PDPPolicy.FIELD_POLICY_TYPE, type);
+    spec.with(PDPPolicy.FIELD_ENABLED, enabled);
+    return pdpService.searchPolicies(spec.build(),pageRequestBuilder.build());
   }
 }

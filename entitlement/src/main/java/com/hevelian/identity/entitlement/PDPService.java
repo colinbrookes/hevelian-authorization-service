@@ -2,7 +2,10 @@ package com.hevelian.identity.entitlement;
 
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +26,13 @@ public class PDPService {
   @Getter
   private final PDPPolicyRepository policyRepository;
 
-  /**
-   * Return all PDP policies sorted by order number.
-   */
-  public Iterable<PDPPolicy> getAllPolicies() {
-    // Do not remove ordering. Entitlement engine relies on this.
-    return policyRepository.findAll(new Sort(Sort.Direction.ASC, "policyOrder"));
+  public Iterable<PDPPolicy> getAllPoliciesOrdered() {
+    Sort sort = new Sort(Sort.Direction.ASC, PDPPolicy.FIELD_POLICY_ORDER);
+      return policyRepository.findAll(sort);
+  }
+
+  public Page<PDPPolicy> searchPolicies(Specification<PDPPolicy> spec, PageRequest request){
+    return policyRepository.findAll(spec,request);
   }
 
   public PDPPolicy getPolicy(String policyId) throws PDPPolicyNotFoundByPolicyIdException {

@@ -20,7 +20,9 @@
  * class. Added support of ElementKind.PARAMETER in ErrorMessage resolution.
  * Corresponding ticket:
  */
+
 package com.hevelian.identity.server.exhandler;
+
 import cz.jirutka.spring.exhandler.handlers.ErrorMessageRestExceptionHandler;
 import cz.jirutka.spring.exhandler.messages.ErrorMessage;
 import cz.jirutka.spring.exhandler.messages.ValidationErrorMessage;
@@ -29,6 +31,7 @@ import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -39,21 +42,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.springframework.util.StringUtils.isEmpty;
+
 public class ConstraintViolationExceptionHandler extends ErrorMessageRestExceptionHandler<ConstraintViolationException> {
+
   private ConversionService conversionService = new DefaultConversionService();
+
+
   public ConstraintViolationExceptionHandler() {
     super(UNPROCESSABLE_ENTITY);
   }
+
   @Override
   public ValidationErrorMessage createBody(ConstraintViolationException ex, HttpServletRequest req) {
+
     ErrorMessage tmpl = super.createBody(ex, req);
     ValidationErrorMessage msg = new ValidationErrorMessage(tmpl);
+
     for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
       Node pathNode = findLastNonEmptyPathNode(violation.getPropertyPath());
+
       if (pathNode != null && (pathNode.getKind() == ElementKind.PROPERTY || pathNode.getKind() == ElementKind.PARAMETER)) {
         msg.addError(pathNode.getName(), convertToString(violation.getInvalidValue()), violation.getMessage());
+
         // type level constraints etc.
       } else {
         msg.addError(violation.getMessage());
@@ -61,6 +74,7 @@ public class ConstraintViolationExceptionHandler extends ErrorMessageRestExcepti
     }
     return msg;
   }
+
   /**
    * Conversion service used for converting an invalid value to String.
    * When no service provided, the {@link DefaultConversionService} is used.
@@ -72,7 +86,9 @@ public class ConstraintViolationExceptionHandler extends ErrorMessageRestExcepti
     Assert.notNull(conversionService, "conversionService must not be null");
     this.conversionService = conversionService;
   }
+
   private Node findLastNonEmptyPathNode(Path path) {
+
     List<Node> list = new ArrayList<>();
     for (Iterator<Node> it = path.iterator(); it.hasNext(); ) {
       list.add(it.next());
@@ -85,14 +101,18 @@ public class ConstraintViolationExceptionHandler extends ErrorMessageRestExcepti
     }
     return null;
   }
+
   private String convertToString(Object invalidValue) {
+
     if (invalidValue == null) {
       return null;
     }
     try {
       return conversionService.convert(invalidValue, String.class);
+
     } catch (ConversionException ex) {
       return invalidValue.toString();
     }
   }
+
 }

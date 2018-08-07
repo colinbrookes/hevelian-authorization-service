@@ -1,16 +1,12 @@
 package com.hevelian.identity.users;
 
-import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.ITenantProvider;
 import com.hevelian.identity.core.SystemRoles;
+import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.model.Tenant;
@@ -21,6 +17,15 @@ import com.hevelian.identity.users.repository.UserRepository;
 import com.hevelian.identity.users.util.UserRoleUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 // Manage all transactions in service layer, where business logic occurs.
@@ -34,14 +39,20 @@ public class UserService {
   private final MultiUsersRoleAssignManager murAssignManager;
 
   @Transactional(readOnly = false)
-  public Role addRole(Role role) {
+  public Role addRole(Role role) throws RoleAlreadyExistsException {
     Preconditions.checkArgument(role.getId() == null);
+    if (roleRepository.findOneByName(role.getName()) != null) {
+      throw new RoleAlreadyExistsException(role.getName());
+    }
     return roleRepository.save(role);
   }
 
   @Transactional(readOnly = false)
-  public User addUser(User user) throws RolesNotFoundByNameException {
+  public User addUser(User user) throws RolesNotFoundByNameException, UserAlreadyExistsException {
     Preconditions.checkArgument(user.getId() == null);
+    if (userRepository.findOneByName(user.getName()) != null) {
+      throw new UserAlreadyExistsException(user.getName());
+    }
     Set<String> userRoleNames = UserRoleUtil.rolesToNames(user.getRoles());
     Preconditions.checkArgument(userRoleNames.size() == user.getRoles().size());
 
@@ -63,12 +74,12 @@ public class UserService {
     return user;
   }
 
-  public Iterable<Role> findAllRoles() {
-    return roleRepository.findAll();
+  public Page<Role> searchRoles(Specification<Role> spec, PageRequest request) {
+    return roleRepository.findAll(spec, request);
   }
 
-  public Iterable<User> findAllUsers() {
-    return userRepository.findAll();
+  public Page<User> searchUsers(Specification<User> spec, PageRequest request) {
+    return userRepository.findAll(spec, request);
   }
 
   public Iterable<User> getUsersOfRole(Role role) throws RoleNotFoundByNameException {
@@ -119,7 +130,7 @@ public class UserService {
 
   @Transactional(readOnly = false)
   public void addRemoveRolesOfUser(String userName, Set<String> newRoleNames,
-      Set<String> removedRoleNames)
+                                   Set<String> removedRoleNames)
       throws UserNotFoundByNameException, RolesNotFoundByNameException {
     User user = userRepository.findOneByName(userName);
     if (user == null) {
@@ -144,7 +155,7 @@ public class UserService {
   }
 
   public void addRemoveUsersOfRole(String roleName, Set<String> newUserNames,
-      Set<String> removedUserNames)
+                                   Set<String> removedUserNames)
       throws RoleNotFoundByNameException, UsersNotFoundByNameException {
     Role role = roleRepository.findOneByName(roleName);
     if (role == null) {
@@ -188,6 +199,10 @@ public class UserService {
     }
     roleRepository.deleteAllUsers(role.getId());
     murAssignManager.assignRoleToUsers(newUserNames, role);
+  }
+
+  public Role findRole(String name) {
+    return roleRepository.findOneByName(name);
   }
 
   public static class RoleNotFoundByNameException extends EntityNotFoundByCriteriaException {
@@ -236,6 +251,29 @@ public class UserService {
       super("name", userName);
     }
   }
+
+  @Getter
+  public static class RoleAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = 7876155596672097441L;
+    private String name;
+
+    public RoleAlreadyExistsException(String roleName) {
+      super(String.format("Role with name '%s' already exists.", roleName));
+      this.name = roleName;
+    }
+  }
+
+  @Getter
+  public static class UserAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = -3649682459320300296L;
+    private String name;
+
+    public UserAlreadyExistsException(String userName) {
+      super(String.format("User with name '%s' already exists.", userName));
+      this.name = userName;
+    }
+  }
+
 
   public static class UsersNotFoundByNameException extends UserNotFoundByNameException {
     private static final long serialVersionUID = -5578641450581609271L;

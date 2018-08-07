@@ -12,7 +12,7 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * The logo should meet the specified parameters.
+ * Logo should match the specified requirements.
  */
 @Documented
 @Constraint(validatedBy = LogoValidator.class)

@@ -10,6 +10,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+/**
+ *  Logo image properties(width and height) should be less than or equals 300 pixels.
+ */
 public class LogoValidator implements ConstraintValidator<Logo, MultipartFile> {
 
   private static final int MAX_IMAGE_WIDTH = 300;

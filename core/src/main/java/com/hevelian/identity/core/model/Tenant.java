@@ -1,21 +1,18 @@
 package com.hevelian.identity.core.model;
 
-import java.time.OffsetDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import lombok.experimental.FieldNameConstants;
-import org.eclipse.persistence.annotations.Index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.google.common.base.Objects;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
+import org.eclipse.persistence.annotations.Index;
 
 import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
  * Constraint: to make the 'dateActiveChanged' work properly - update the 'active' property only via
@@ -27,9 +24,8 @@ import javax.persistence.*;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "domain", callSuper = false)
-public class Tenant extends AbstractEntity
-{
-  // This characters number can save 360kB
+public class Tenant extends AbstractEntity {
+  // This number characters can save 360kB
   private final int maxCountCharacters = 360000;
 
   @Column(nullable = false, updatable = false)
@@ -92,4 +88,9 @@ public class Tenant extends AbstractEntity
       _initialActive = active;
     }
   }
+  @JsonProperty("hasLogo")
+  public boolean hasLogo() {
+    return logo!=null;
+  }
+
 }

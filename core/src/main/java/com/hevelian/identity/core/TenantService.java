@@ -102,16 +102,20 @@ public class TenantService {
     return tenant;
   }
 
-  public BufferedImage getTenantLogo(String tenantDomain) throws TenantNotFoundByDomainException {
+  public BufferedImage getTenantLogo(String tenantDomain)
+      throws TenantNotFoundByDomainException, TenantHasNoLogoException {
     Tenant tenant = getTenant(tenantDomain);
     byte[] logo = tenant.getLogo();
     BufferedImage img = null;
     try {
-      if (logo!= null) {
+      if (logo != null) {
         img = ImageIO.read(new ByteArrayInputStream(logo));
       }
-    } catch (IOException e){
+    } catch (IOException e) {
       throw new ReadImageException("Error reading image from byte array input stream.", e);
+    }
+    if (img == null) {
+      throw new TenantHasNoLogoException(tenant.getDomain());
     }
     return img;
   }
@@ -179,6 +183,17 @@ public class TenantService {
     }
   }
 
+  @Getter
+  public static class TenantHasNoLogoException extends Exception {
+    private static final long serialVersionUID = -4846261273394679678L;
+    private final String domain;
+
+    public TenantHasNoLogoException(String domain) {
+      super(String.format("Tenant with domain '%s' hasn't a logo.", domain));
+      this.domain = domain;
+    }
+  }
+
   public interface TenantAdminService {
     void createTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
 
@@ -192,4 +207,5 @@ public class TenantService {
 
     void tenantDeleted(Tenant tenant);
   }
+
 }

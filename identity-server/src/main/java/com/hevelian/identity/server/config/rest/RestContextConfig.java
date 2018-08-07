@@ -2,9 +2,10 @@ package com.hevelian.identity.server.config.rest;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
+import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistsException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.core.TenantService.TenantHasNoLogoException;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
@@ -104,7 +105,8 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(PDPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
-        .addErrorMessageHandler(TenantService.TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(TenantHasNoLogoException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(RoleAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(UserAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(PAPPolicyAlreadyExistsException.class, HttpStatus.CONFLICT)

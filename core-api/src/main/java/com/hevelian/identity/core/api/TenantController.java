@@ -2,8 +2,8 @@ package com.hevelian.identity.core.api;
 
 import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
-import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistsException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.core.TenantService.TenantHasNoLogoException;
 import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;
 import com.hevelian.identity.core.api.dto.TenantRequestDTO;
@@ -58,7 +58,7 @@ public class TenantController {
 
   @RequestMapping(path = "/addTenant", method = RequestMethod.POST)
   public PrimitiveResult<String> addTenant(@Validated(value = {Default.class, NewTenantGroup.class})
-                                           @RequestBody TenantRequestDTO tenant) throws TenantDomainAlreadyExistsException {
+                                           @RequestBody TenantRequestDTO tenant) throws TenantService.TenantDomainAlreadyExistsException {
     tenant.getTenantAdmin()
         .setPassword(passwordEncoder.encode(tenant.getTenantAdmin().getPassword()));
     return new PrimitiveResult<>(
@@ -68,14 +68,14 @@ public class TenantController {
   @RequestMapping(path = "/setTenantLogo", method = RequestMethod.POST)
   public void setTenantLogo(@ApiParam(value = "Tenant domain", required = true) @RequestParam String tenantDomain,
                             @ApiParam(value = "Tenant logo", required = true) @Logo @RequestParam MultipartFile file)
-      throws TenantNotFoundByDomainException,IOException {
+      throws TenantNotFoundByDomainException, IOException {
     tenantService.addTenantLogo(tenantDomain, file.getBytes());
   }
 
   @RequestMapping(path = "/getTenantLogo", method = RequestMethod.GET,
       produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
   public BufferedImage getTenantLogo(@ApiParam(value = "Tenant domain", required = true) @RequestParam(name = "tenantDomain") String tenantDomain)
-      throws TenantNotFoundByDomainException {
+      throws TenantNotFoundByDomainException, TenantHasNoLogoException {
     return tenantService.getTenantLogo(tenantDomain);
   }
 
@@ -107,9 +107,9 @@ public class TenantController {
                                     @ApiParam(value = "Domain") @RequestParam(required = false) String domain,
                                     @ApiParam(value = "Tenant is active") @RequestParam(required = false) Boolean active,
                                     @ApiParam(value = "Date created from (including entered time).API uses UTC time zone. Format: yyyy-MM-dd'T'HH:mm:ss.SSS")
-                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
                                     @ApiParam(value = "Date created to (excluding entered time).API uses UTC time zone. Format: yyyy-MM-dd'T'HH:mm:ss.SSS")
-                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<Tenant> builder = new EntitySpecificationsBuilder<>();
     builder.with(Tenant.FIELD_DOMAIN, domain)

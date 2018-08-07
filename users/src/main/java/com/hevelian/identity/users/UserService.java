@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.ITenantProvider;
 import com.hevelian.identity.core.SystemRoles;
+import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
 import com.hevelian.identity.core.exc.IllegalEntityStateException;
 import com.hevelian.identity.core.model.Tenant;
@@ -38,14 +39,20 @@ public class UserService {
   private final MultiUsersRoleAssignManager murAssignManager;
 
   @Transactional(readOnly = false)
-  public Role addRole(Role role) {
+  public Role addRole(Role role) throws RoleAlreadyExistsException {
     Preconditions.checkArgument(role.getId() == null);
+    if (roleRepository.findOneByName(role.getName()) != null) {
+      throw new RoleAlreadyExistsException(role.getName());
+    }
     return roleRepository.save(role);
   }
 
   @Transactional(readOnly = false)
-  public User addUser(User user) throws RolesNotFoundByNameException {
+  public User addUser(User user) throws RolesNotFoundByNameException, UserAlreadyExistsException {
     Preconditions.checkArgument(user.getId() == null);
+    if (userRepository.findOneByName(user.getName()) != null) {
+      throw new UserAlreadyExistsException(user.getName());
+    }
     Set<String> userRoleNames = UserRoleUtil.rolesToNames(user.getRoles());
     Preconditions.checkArgument(userRoleNames.size() == user.getRoles().size());
 
@@ -68,11 +75,11 @@ public class UserService {
   }
 
   public Page<Role> searchRoles(Specification<Role> spec, PageRequest request) {
-    return roleRepository.findAll(spec,request);
+    return roleRepository.findAll(spec, request);
   }
 
   public Page<User> searchUsers(Specification<User> spec, PageRequest request) {
-    return userRepository.findAll(spec,request);
+    return userRepository.findAll(spec, request);
   }
 
   public Iterable<User> getUsersOfRole(Role role) throws RoleNotFoundByNameException {
@@ -244,6 +251,29 @@ public class UserService {
       super("name", userName);
     }
   }
+
+  @Getter
+  public static class RoleAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = 7876155596672097441L;
+    private String name;
+
+    public RoleAlreadyExistsException(String roleName) {
+      super(String.format("Role with name '%s' already exists.", roleName));
+      this.name = roleName;
+    }
+  }
+
+  @Getter
+  public static class UserAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = -3649682459320300296L;
+    private String name;
+
+    public UserAlreadyExistsException(String userName) {
+      super(String.format("User with name '%s' already exists.", userName));
+      this.name = userName;
+    }
+  }
+
 
   public static class UsersNotFoundByNameException extends UserNotFoundByNameException {
     private static final long serialVersionUID = -5578641450581609271L;

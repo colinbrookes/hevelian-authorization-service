@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.SystemRoles;
+import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.entitlement.exc.PoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.exc.PolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.model.PolicyType;
@@ -41,19 +42,22 @@ public class PAPService {
   private final PDPPolicyRepository pdpPolicyRepository;
 
   public Page<PAPPolicy> searchPolicies(Specification<PAPPolicy> spec, PageRequest pageRequest) {
-    return papPolicyRepository.findAll(spec,pageRequest);
+    return papPolicyRepository.findAll(spec, pageRequest);
   }
 
   @Transactional(readOnly = false)
-  public PAPPolicy addPolicy(String policyContent) throws PolicyParsingException {
+  public PAPPolicy addPolicy(String policyContent) throws PolicyParsingException, PAPPolicyAlreadyExistsException {
     Preconditions.checkArgument(!Strings.isNullOrEmpty(policyContent));
     PAPPolicy policy = contentToPolicy(policyContent);
     return addPolicy(policy);
   }
 
   @Transactional(readOnly = false)
-  public PAPPolicy addPolicy(PAPPolicy policy) {
+  public PAPPolicy addPolicy(PAPPolicy policy) throws PAPPolicyAlreadyExistsException {
     Preconditions.checkArgument(policy.getId() == null);
+    if (papPolicyRepository.findByPolicyId(policy.getPolicyId()) != null) {
+      throw new PAPPolicyAlreadyExistsException(policy.getPolicyId());
+    }
     papPolicyRepository.save(policy);
     return policy;
   }
@@ -155,5 +159,15 @@ public class PAPService {
     }
   }
 
+  @Getter
+  public static class PAPPolicyAlreadyExistsException extends EntityAlreadyExistsException {
+    private static final long serialVersionUID = 2993478084039111761L;
+    private String policyId;
+
+    public PAPPolicyAlreadyExistsException(String policyId) {
+      super(String.format("Policy with id '%s' already exists in PAP.", policyId));
+      this.policyId = policyId;
+    }
+  }
 
 }

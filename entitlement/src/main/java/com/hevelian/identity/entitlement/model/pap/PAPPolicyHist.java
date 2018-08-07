@@ -21,7 +21,7 @@ import lombok.Setter;
 // @Table(uniqueConstraints = {@UniqueConstraint(
 // columnNames = {"policyId", "version", TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
 @IdClass(HistPK.class)
-@AttributeOverride(name = "policyId", column = @Column(nullable = false))
+@AttributeOverride(name = Policy.FIELD_POLICY_ID, column = @Column(nullable = false))
 public class PAPPolicyHist extends Policy implements IPAPPolicy {
   @Column(nullable = false)
   @Id

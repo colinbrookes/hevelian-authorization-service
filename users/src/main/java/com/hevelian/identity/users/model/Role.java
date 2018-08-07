@@ -20,12 +20,12 @@ import javax.persistence.UniqueConstraint;
 @Setter
 @EqualsAndHashCode(of = "name", callSuper = false)
 @Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"name", TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
+    @UniqueConstraint(columnNames = {Role.FIELD_NAME, TenantDiscriminatorColumnMetadata.NAME_DEFAULT})})
 public class Role extends AbstractEntity {
 
   // No unique constraint on name because of
   // https://bugs.eclipse.org/bugs/show_bug.cgi?id=499504
-  @FieldNameConstants
   @Column(nullable = false)
+  @FieldNameConstants
   private String name;
 }

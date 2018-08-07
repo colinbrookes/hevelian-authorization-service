@@ -2,6 +2,7 @@ package com.hevelian.identity.core.api;
 
 import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
+import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistsException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;
@@ -52,7 +53,7 @@ public class TenantController {
 
   @RequestMapping(path = "/addTenant", method = RequestMethod.POST)
   public PrimitiveResult<String> addTenant(@Validated(value = {Default.class, NewTenantGroup.class})
-                                           @RequestBody TenantRequestDTO tenant) {
+                                           @RequestBody TenantRequestDTO tenant) throws TenantDomainAlreadyExistsException {
     tenant.getTenantAdmin()
         .setPassword(passwordEncoder.encode(tenant.getTenantAdmin().getPassword()));
     return new PrimitiveResult<>(

@@ -2,8 +2,8 @@ package com.hevelian.identity.core.api;
 
 import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
-import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.TenantService.TenantHasNoLogoException;
+import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.api.dto.TenantAdminRequestDTO.NewTenantGroup;
 import com.hevelian.identity.core.api.dto.TenantDomainDTO;
 import com.hevelian.identity.core.api.dto.TenantRequestDTO;
@@ -101,15 +101,15 @@ public class TenantController {
   }
 
   @RequestMapping(path = "/getAllTenants", method = RequestMethod.GET)
-  public Page<Tenant> getAllTenants(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
-                                    @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
+  public Page<Tenant> getAllTenants(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION,defaultValue = PageRequestParameters.DEFAULT_PAGE) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
+                                    @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION,defaultValue = PageRequestParameters.DEFAULT_SIZE) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
                                     @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
                                     @ApiParam(value = "Domain") @RequestParam(required = false) String domain,
                                     @ApiParam(value = "Tenant is active") @RequestParam(required = false) Boolean active,
                                     @ApiParam(value = "Date created from (including entered time).API uses UTC time zone. Format: yyyy-MM-dd'T'HH:mm:ss.SSS")
-                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
+                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
                                     @ApiParam(value = "Date created to (excluding entered time).API uses UTC time zone. Format: yyyy-MM-dd'T'HH:mm:ss.SSS")
-                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
+                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<Tenant> builder = new EntitySpecificationsBuilder<>();
     builder.with(Tenant.FIELD_DOMAIN, domain)

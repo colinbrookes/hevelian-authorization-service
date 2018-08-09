@@ -2,7 +2,6 @@ package com.hevelian.identity.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.google.common.base.Objects;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -25,8 +24,6 @@ import java.time.OffsetDateTime;
 @Setter
 @EqualsAndHashCode(of = "domain", callSuper = false)
 public class Tenant extends AbstractEntity {
-  // This number characters can save 360kB
-  private final int maxCountCharacters = 360000;
 
   @Column(nullable = false, updatable = false)
   @Setter(AccessLevel.PRIVATE)
@@ -54,7 +51,8 @@ public class Tenant extends AbstractEntity {
 
   // Not all JDBC drivers support fetch type LAZY.
   @Lob
-  @Column(length = maxCountCharacters)
+  // Logo can be max 360kB
+  @Column(length = 360000)
   @JsonIgnore
   private byte[] logo;
 

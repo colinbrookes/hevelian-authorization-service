@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
+import com.hevelian.identity.entitlement.evaluator.EntitlementEngineForPAPPolicy;
 import com.hevelian.identity.entitlement.exc.PoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.exc.PolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.model.PolicyType;
@@ -16,6 +17,7 @@ import com.hevelian.identity.entitlement.repository.PAPPolicyRepository;
 import com.hevelian.identity.entitlement.repository.PDPPolicyRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +26,10 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wso2.balana.AbstractPolicy;
+import org.wso2.balana.ParsingException;
 import org.wso2.balana.Policy;
 import org.wso2.balana.PolicySet;
+import org.wso2.balana.ctx.ResponseCtx;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -35,6 +39,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @Secured(value = SystemRoles.TENANT_ADMIN)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Log4j2
 public class PAPService {
   @Getter
   private final PAPPolicyRepository papPolicyRepository;
@@ -108,6 +113,26 @@ public class PAPService {
     return policy;
   }
 
+  public String tryPolicy(String policyId, String subject, String resource,
+                          String action, String environment) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+    logAttributeRequest(subject, resource, action, environment);
+    EntitlementEngineForPAPPolicy entitlementEngineForPAPPolicy = new EntitlementEngineForPAPPolicy(getPolicy(policyId));
+    ResponseCtx response = entitlementEngineForPAPPolicy.evaluateAsResponseCtx(subject, resource, action, environment);
+    String srtResponse = response.encode();
+    logResponse(srtResponse);
+    return srtResponse;
+  }
+
+  public String getPolicyDecision(String policyId, String request) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+    if (log.isDebugEnabled()) {
+      log.debug("XACML Request:\n" + request);
+    }
+    EntitlementEngineForPAPPolicy entitlementEngineForPAPPolicy = new EntitlementEngineForPAPPolicy(getPolicy(policyId));
+    String response = entitlementEngineForPAPPolicy.evaluate(request);
+    logResponse(response);
+    return response;
+  }
+
   public Iterable<String> getPolicyVersions(String policyId) {
     return null;
   }
@@ -167,6 +192,22 @@ public class PAPService {
     public PAPPolicyAlreadyExistsException(String policyId) {
       super(String.format("Policy with id '%s' already exists in PAP.", policyId));
       this.policyId = policyId;
+    }
+  }
+
+  private void logResponse(String response) {
+    if (log.isDebugEnabled()) {
+      log.debug("XACML Response:\n" + response);
+    }
+  }
+
+  private void logAttributeRequest(String subject, String resource, String action,
+                                   String environment) {
+    if (log.isDebugEnabled()) {
+      StringBuilder sb = new StringBuilder("XACML Request Attributes:\n").append("Subject: ")
+          .append(subject).append("\nResource: ").append(resource).append("\nAction: ")
+          .append(action).append("\nEnvironment: ").append(environment);
+      log.debug(sb.toString());
     }
   }
 

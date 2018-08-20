@@ -1,9 +1,8 @@
 package com.hevelian.identity.entitlement.pdp;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.hevelian.identity.entitlement.PDPService;
+import com.hevelian.identity.entitlement.ctx.RequestCtxFactory2;
+import com.hevelian.identity.entitlement.pdp.finder.PDPPolicyFinderModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -21,9 +20,11 @@ import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.finder.PolicyFinderModule;
 import org.wso2.balana.finder.impl.CurrentEnvModule;
 import org.wso2.balana.finder.impl.SelectorModule;
-import com.hevelian.identity.entitlement.PDPService;
-import com.hevelian.identity.entitlement.ctx.RequestCtxFactory2;
-import com.hevelian.identity.entitlement.pdp.finder.PDPPolicyFinderModule;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component
 @Scope("singleton")
@@ -34,7 +35,7 @@ public class EntitlementEngine {
   @Autowired
   public EntitlementEngine(PDPService pdpService) {
     AttributeFinder attributeFinder = new AttributeFinder();
-    List<AttributeFinderModule> attributeFinderModules = new ArrayList<AttributeFinderModule>();
+    List<AttributeFinderModule> attributeFinderModules = new ArrayList<>();
     SelectorModule selectorModule = new SelectorModule();
     CurrentEnvModule currentEnvModule = new CurrentEnvModule();
     attributeFinderModules.add(selectorModule);
@@ -42,7 +43,7 @@ public class EntitlementEngine {
     attributeFinder.setModules(attributeFinderModules);
 
     PolicyFinder policyFinder = new PolicyFinder();
-    Set<PolicyFinderModule> policyFinderModules = new HashSet<PolicyFinderModule>();
+    Set<PolicyFinderModule> policyFinderModules = new HashSet<>();
     PDPPolicyFinderModule inMemoryPolicyFinderModule =
         // TODO retrieve policy combining algorithm from the database
         new PDPPolicyFinderModule(pdpService, new DenyOverridesPolicyAlg());
@@ -77,11 +78,11 @@ public class EntitlementEngine {
     return evaluateAsResponseCtx(requestCtx);
   }
 
-  public ResponseCtx evaluateAsResponseCtx(RequestCtx xacmlRequestCtx) throws ParsingException {
+  public ResponseCtx evaluateAsResponseCtx(RequestCtx xacmlRequestCtx) {
     return pdp.evaluate(xacmlRequestCtx);
   }
 
-  public String evaluate(RequestCtx xacmlRequestCtx) throws ParsingException {
+  public String evaluate(RequestCtx xacmlRequestCtx) {
     return evaluateAsResponseCtx(xacmlRequestCtx).encode();
   }
 }

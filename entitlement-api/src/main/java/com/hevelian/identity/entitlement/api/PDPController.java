@@ -60,7 +60,7 @@ public class PDPController {
   public Page<PDPPolicy> getAllPolicies(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
                                         @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
                                         @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
-                                        @ApiParam(value = "Policy id") @RequestParam(required = false) Integer policyId,
+                                        @ApiParam(value = "Policy id") @RequestParam(required = false) String policyId,
                                         @ApiParam(value = "Policy type") @RequestParam(required = false) PolicyType type,
                                         @ApiParam(value = "Policy is enabled") @RequestParam(required = false) Boolean enabled) {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page,size,sort);

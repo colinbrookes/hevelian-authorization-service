@@ -36,7 +36,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
   }
 
   private Map<URI, AbstractPolicy> getPolicies() {
-    Map<URI, AbstractPolicy> policies = new LinkedHashMap<URI, AbstractPolicy>();
+    Map<URI, AbstractPolicy> policies = new LinkedHashMap<>();
     for (PDPPolicy d : pdpService.getAllPoliciesOrdered()){
       AbstractPolicy p;
       try {
@@ -68,7 +68,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
   @Override
   public PolicyFinderResult findPolicy(EvaluationCtx context) {
     Map<URI, AbstractPolicy> policies = getPolicies();
-    ArrayList<AbstractPolicy> selectedPolicies = new ArrayList<AbstractPolicy>();
+    ArrayList<AbstractPolicy> selectedPolicies = new ArrayList<>();
     Set<Map.Entry<URI, AbstractPolicy>> entrySet = policies.entrySet();
 
     // iterate through all the policies we currently have loaded
@@ -84,9 +84,9 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
       // see if the target matched
       if (result == MatchResult.MATCH) {
 
-        if ((combiningAlg == null) && (selectedPolicies.size() > 0)) {
+        if ((combiningAlg == null) && (!selectedPolicies.isEmpty())) {
           // we found a match before, so this is an error
-          ArrayList<String> code = new ArrayList<String>();
+          ArrayList<String> code = new ArrayList<>();
           code.add(Status.STATUS_PROCESSING_ERROR);
           Status status = new Status(code, "too many applicable " + "top-level policies");
           return new PolicyFinderResult(status);
@@ -106,7 +106,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
         }
         return new PolicyFinderResult();
       case 1:
-        return new PolicyFinderResult((selectedPolicies.get(0)));
+        return new PolicyFinderResult(selectedPolicies.get(0));
       default:
         return new PolicyFinderResult(new PolicySet(null, combiningAlg, null, selectedPolicies));
     }
@@ -130,7 +130,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
     }
 
     // if there was an error loading the policy, return the error
-    ArrayList<String> code = new ArrayList<String>();
+    ArrayList<String> code = new ArrayList<>();
     code.add(Status.STATUS_PROCESSING_ERROR);
     Status status = new Status(code, "couldn't load referenced policy");
     log.info("No policy found, code=" + code);

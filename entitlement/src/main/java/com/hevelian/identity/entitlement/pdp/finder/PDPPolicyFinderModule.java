@@ -21,23 +21,21 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A test finder module. Reloads policies on every request. Just for test purposes.
+ * A test PDP finder module. Reloads policies on every request. Just for test purposes.
  */
 public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   private PolicyFinder finder = null;
-  private PolicyCombiningAlgorithm combiningAlg;
   private PDPService pdpService;
   private static Log log = LogFactory.getLog(PDPPolicyFinderModule.class);
 
-  public PDPPolicyFinderModule(PDPService pdpService, PolicyCombiningAlgorithm combiningAlg) {
+  public PDPPolicyFinderModule(PDPService pdpService) {
     this.pdpService = pdpService;
-    this.combiningAlg = combiningAlg;
   }
 
   private Map<URI, AbstractPolicy> getPolicies() {
-    Map<URI, AbstractPolicy> policies = new LinkedHashMap<URI, AbstractPolicy>();
-    for (PDPPolicy d : pdpService.getAllPoliciesOrdered()){
+    Map<URI, AbstractPolicy> policies = new LinkedHashMap<>();
+    for (PDPPolicy d : pdpService.getAllPoliciesOrdered()) {
       AbstractPolicy p;
       try {
         p = loadPolicy(d);
@@ -67,8 +65,9 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   @Override
   public PolicyFinderResult findPolicy(EvaluationCtx context) {
+    PolicyCombiningAlgorithm combiningAlg = pdpService.getPolicyCombiningAlgorithmInstance();
     Map<URI, AbstractPolicy> policies = getPolicies();
-    ArrayList<AbstractPolicy> selectedPolicies = new ArrayList<AbstractPolicy>();
+    ArrayList<AbstractPolicy> selectedPolicies = new ArrayList<>();
     Set<Map.Entry<URI, AbstractPolicy>> entrySet = policies.entrySet();
 
     // iterate through all the policies we currently have loaded
@@ -84,11 +83,11 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
       // see if the target matched
       if (result == MatchResult.MATCH) {
 
-        if ((combiningAlg == null) && (selectedPolicies.size() > 0)) {
+        if ((combiningAlg == null) && (!selectedPolicies.isEmpty())) {
           // we found a match before, so this is an error
-          ArrayList<String> code = new ArrayList<String>();
+          ArrayList<String> code = new ArrayList<>();
           code.add(Status.STATUS_PROCESSING_ERROR);
-          Status status = new Status(code, "too many applicable " + "top-level policies");
+          Status status = new Status(code, "Too many applicable " + "top-level policies. Verify if PDP combining algorithm is set.");
           return new PolicyFinderResult(status);
         }
 
@@ -130,7 +129,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
     }
 
     // if there was an error loading the policy, return the error
-    ArrayList<String> code = new ArrayList<String>();
+    ArrayList<String> code = new ArrayList<>();
     code.add(Status.STATUS_PROCESSING_ERROR);
     Status status = new Status(code, "couldn't load referenced policy");
     log.info("No policy found, code=" + code);
@@ -140,5 +139,4 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
   private AbstractPolicy loadPolicy(PDPPolicy pdpPolicy) throws PolicyParsingException {
     return PolicyFactory.getFactory().getXacmlPolicy(pdpPolicy.getContent(), finder);
   }
-
 }

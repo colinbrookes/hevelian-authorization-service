@@ -35,7 +35,7 @@ public class RequestCtxFactory2 {
 
   public RequestCtx getRequestCtx(String subject, String resource, String action,
       String environment) throws ParsingException {
-    Set<Attributes> attributesSet = new HashSet<Attributes>();
+    Set<Attributes> attributesSet = new HashSet<>();
     try {
       if (subject != null) {
         attributesSet.add(getStringAttributes(PolicyConstants.SUBJECT_CATEGORY_URI,
@@ -43,15 +43,15 @@ public class RequestCtxFactory2 {
       }
       if (resource != null) {
         attributesSet.add(getStringAttributes(PolicyConstants.RESOURCE_CATEGORY_URI,
-            PolicyConstants.RESOURCE_ID, subject));
+            PolicyConstants.RESOURCE_ID, resource));
       }
       if (action != null) {
         attributesSet.add(getStringAttributes(PolicyConstants.ACTION_CATEGORY_URI,
-            PolicyConstants.ACTION_ID, subject));
+            PolicyConstants.ACTION_ID, action));
       }
       if (environment != null) {
         attributesSet.add(getStringAttributes(PolicyConstants.ENVIRONMENT_CATEGORY_URI,
-            PolicyConstants.ENVIRONMENT_ID, subject));
+            PolicyConstants.ENVIRONMENT_ID, environment));
       }
     } catch (URISyntaxException e) {
       throw new ParsingException("Error occurred while building XACML request from attributes.", e);

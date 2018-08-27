@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,6 @@ import org.w3c.dom.Element;
 import org.wso2.balana.PDP;
 import org.wso2.balana.PDPConfig;
 import org.wso2.balana.ParsingException;
-import org.wso2.balana.combine.xacml3.DenyOverridesPolicyAlg;
 import org.wso2.balana.ctx.RequestCtxFactory;
 import org.wso2.balana.ctx.ResponseCtx;
 import org.wso2.balana.ctx.xacml3.RequestCtx;
@@ -34,7 +34,7 @@ public class EntitlementEngine {
   @Autowired
   public EntitlementEngine(PDPService pdpService) {
     AttributeFinder attributeFinder = new AttributeFinder();
-    List<AttributeFinderModule> attributeFinderModules = new ArrayList<AttributeFinderModule>();
+    List<AttributeFinderModule> attributeFinderModules = new ArrayList<>();
     SelectorModule selectorModule = new SelectorModule();
     CurrentEnvModule currentEnvModule = new CurrentEnvModule();
     attributeFinderModules.add(selectorModule);
@@ -42,10 +42,8 @@ public class EntitlementEngine {
     attributeFinder.setModules(attributeFinderModules);
 
     PolicyFinder policyFinder = new PolicyFinder();
-    Set<PolicyFinderModule> policyFinderModules = new HashSet<PolicyFinderModule>();
-    PDPPolicyFinderModule inMemoryPolicyFinderModule =
-        // TODO retrieve policy combining algorithm from the database
-        new PDPPolicyFinderModule(pdpService, new DenyOverridesPolicyAlg());
+    Set<PolicyFinderModule> policyFinderModules = new HashSet<>();
+    PDPPolicyFinderModule inMemoryPolicyFinderModule = new PDPPolicyFinderModule(pdpService);
     policyFinderModules.add(inMemoryPolicyFinderModule);
     policyFinder.setModules(policyFinderModules);
 
@@ -77,11 +75,11 @@ public class EntitlementEngine {
     return evaluateAsResponseCtx(requestCtx);
   }
 
-  public ResponseCtx evaluateAsResponseCtx(RequestCtx xacmlRequestCtx) throws ParsingException {
+  public ResponseCtx evaluateAsResponseCtx(RequestCtx xacmlRequestCtx) {
     return pdp.evaluate(xacmlRequestCtx);
   }
 
-  public String evaluate(RequestCtx xacmlRequestCtx) throws ParsingException {
+  public String evaluate(RequestCtx xacmlRequestCtx) {
     return evaluateAsResponseCtx(xacmlRequestCtx).encode();
   }
 }

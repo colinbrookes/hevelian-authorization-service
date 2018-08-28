@@ -79,7 +79,7 @@ public class EntitySpecification<T extends AbstractEntity> implements Specificat
     } else if (parameter.endsWith(TO)) {
       parameterName = parameter.substring(0, parameterLength - LENGTH_STR_TO);
     } else {
-      throw new IllegalArgumentException("Filtering '" + parameter + "' parameter name is incorrect");
+      throw new IllegalArgumentException("Filtering parameter name '" + parameter + "' is incorrect");
     }
     return parameterName;
   }

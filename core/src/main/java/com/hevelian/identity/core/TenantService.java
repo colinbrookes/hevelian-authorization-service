@@ -81,9 +81,9 @@ public class TenantService {
   }
 
   @Transactional
-  public Tenant addTenantLogo(String tenantDomain, byte[] file) throws TenantNotFoundByDomainException {
+  public Tenant addTenantLogo(String tenantDomain, byte[] logo) throws TenantNotFoundByDomainException {
     Tenant tenant = getTenant(tenantDomain);
-    tenant.setLogo(file);
+    tenant.setLogo(logo);
     tenantRepository.save(tenant);
     return tenant;
   }
@@ -189,7 +189,7 @@ public class TenantService {
     private final String domain;
 
     public TenantHasNoLogoException(String domain) {
-      super(String.format("Tenant with domain '%s' hasn't a logo.", domain));
+      super(String.format("Tenant with domain '%s' has no logo.", domain));
       this.domain = domain;
     }
   }

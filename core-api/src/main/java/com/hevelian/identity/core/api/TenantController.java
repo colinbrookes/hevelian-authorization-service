@@ -40,6 +40,7 @@ import static com.hevelian.identity.core.specification.EntitySpecification.TO;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Validated
 public class TenantController {
+  private final String domain = "Tenant domain";
   private final TenantService tenantService;
   private final PasswordEncoder passwordEncoder;
 
@@ -66,15 +67,15 @@ public class TenantController {
   }
 
   @RequestMapping(path = "/setTenantLogo", method = RequestMethod.POST)
-  public void setTenantLogo(@ApiParam(value = "Tenant domain", required = true) @RequestParam String tenantDomain,
-                            @ApiParam(value = "Tenant logo", required = true) @Logo @RequestParam MultipartFile file)
+  public void setTenantLogo(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain,
+                            @ApiParam(value = "Tenant logo", required = true) @Logo @RequestParam MultipartFile logo)
       throws TenantNotFoundByDomainException, IOException {
-    tenantService.addTenantLogo(tenantDomain, file.getBytes());
+    tenantService.addTenantLogo(tenantDomain, logo.getBytes());
   }
 
   @RequestMapping(path = "/getTenantLogo", method = RequestMethod.GET,
       produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
-  public BufferedImage getTenantLogo(@ApiParam(value = "Tenant domain", required = true) @RequestParam(name = "tenantDomain") String tenantDomain)
+  public BufferedImage getTenantLogo(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain)
       throws TenantNotFoundByDomainException, TenantHasNoLogoException {
     return tenantService.getTenantLogo(tenantDomain);
   }

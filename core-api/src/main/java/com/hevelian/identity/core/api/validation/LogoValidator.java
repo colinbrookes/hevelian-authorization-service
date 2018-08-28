@@ -11,7 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 /**
- *  Logo image properties(width and height) should be less than or equals 300 pixels.
+ *  Logo image properties(width and height) should be less than or equal 300 pixels.
  */
 public class LogoValidator implements ConstraintValidator<Logo, MultipartFile> {
 

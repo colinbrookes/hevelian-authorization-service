@@ -8,18 +8,25 @@ import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
+import com.hevelian.identity.entitlement.PDPService.PDPPolicyCombiningAlgorithmNotSupportedException;
 import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 import com.hevelian.identity.server.exhandler.ConstraintViolationExceptionHandler;
 import com.hevelian.identity.users.UserService.*;
 import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;
+import cz.jirutka.spring.exhandler.interpolators.MessageInterpolator;
+import cz.jirutka.spring.exhandler.interpolators.SpelMessageInterpolator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.context.expression.MapAccessor;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -47,6 +54,9 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
 
   @Autowired
   private RequestMappingHandlerAdapter requestMappingHandlerAdapter;
+
+  @Autowired
+  private ApplicationContext applicationContext;
 
   @Override
   public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
@@ -85,6 +95,8 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         // with wrong behavior.
         .contentNegotiationManager(contentNegotiationManager)
         .httpMessageConverters(requestMappingHandlerAdapter.getMessageConverters())
+        //Custom message interpolator to resolve Spring beans in messages.properties
+        .messageInterpolator(messageInterpolator())
         // Set a list of error handlers for all application errors. Not
         // the best place, but this is all htat is provided out of the
         // box by the lib. This functionality will be revisited again
@@ -95,6 +107,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(PAPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(PDPPolicyNotFoundByPolicyIdException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(PDPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
+        .addErrorMessageHandler(PDPPolicyCombiningAlgorithmNotSupportedException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(TenantService.TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
@@ -117,6 +130,15 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
     m.setBasename("classpath:/com/hevelian/identity/server/api/errors/messages");
     m.setDefaultEncoding("UTF-8");
     return m;
+  }
+  @Bean
+  public MessageInterpolator messageInterpolator()
+  {
+    StandardEvaluationContext ctx = new StandardEvaluationContext();
+    ctx.addPropertyAccessor(new MapAccessor());
+    ctx.setBeanResolver(new BeanFactoryResolver(applicationContext));
+    MessageInterpolator messageInterpolator = new SpelMessageInterpolator(ctx);
+    return messageInterpolator;
   }
 
   @Bean

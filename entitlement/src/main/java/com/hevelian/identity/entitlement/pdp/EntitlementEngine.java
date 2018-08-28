@@ -10,7 +10,6 @@ import org.w3c.dom.Element;
 import org.wso2.balana.PDP;
 import org.wso2.balana.PDPConfig;
 import org.wso2.balana.ParsingException;
-import org.wso2.balana.combine.xacml3.DenyOverridesPolicyAlg;
 import org.wso2.balana.ctx.RequestCtxFactory;
 import org.wso2.balana.ctx.ResponseCtx;
 import org.wso2.balana.ctx.xacml3.RequestCtx;
@@ -44,9 +43,8 @@ public class EntitlementEngine {
 
     PolicyFinder policyFinder = new PolicyFinder();
     Set<PolicyFinderModule> policyFinderModules = new HashSet<>();
-    PDPPolicyFinderModule inMemoryPolicyFinderModule =
-        // TODO retrieve policy combining algorithm from the database
-        new PDPPolicyFinderModule(pdpService, new DenyOverridesPolicyAlg());
+    PDPPolicyFinderModule inMemoryPolicyFinderModule = new PDPPolicyFinderModule(pdpService);
+
     policyFinderModules.add(inMemoryPolicyFinderModule);
     policyFinder.setModules(policyFinderModules);
 

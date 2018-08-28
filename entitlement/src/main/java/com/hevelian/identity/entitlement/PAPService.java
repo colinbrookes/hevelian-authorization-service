@@ -194,7 +194,7 @@ public class PAPService {
       this.policyId = policyId;
     }
   }
-
+//////////////////////
   private void logResponse(String response) {
     if (log.isDebugEnabled()) {
       log.debug("XACML Response:\n" + response);

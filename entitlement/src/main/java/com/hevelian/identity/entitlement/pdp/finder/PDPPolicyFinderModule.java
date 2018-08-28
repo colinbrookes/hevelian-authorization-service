@@ -21,23 +21,21 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A test finder module. Reloads policies on every request. Just for test purposes.
+ * A test PDP finder module. Reloads policies on every request. Just for test purposes.
  */
 public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   private PolicyFinder finder = null;
-  private PolicyCombiningAlgorithm combiningAlg;
   private PDPService pdpService;
   private static Log log = LogFactory.getLog(PDPPolicyFinderModule.class);
 
-  public PDPPolicyFinderModule(PDPService pdpService, PolicyCombiningAlgorithm combiningAlg) {
+  public PDPPolicyFinderModule(PDPService pdpService) {
     this.pdpService = pdpService;
-    this.combiningAlg = combiningAlg;
   }
 
   private Map<URI, AbstractPolicy> getPolicies() {
     Map<URI, AbstractPolicy> policies = new LinkedHashMap<>();
-    for (PDPPolicy d : pdpService.getAllPoliciesOrdered()){
+    for (PDPPolicy d : pdpService.getAllPoliciesOrdered()) {
       AbstractPolicy p;
       try {
         p = loadPolicy(d);
@@ -67,6 +65,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
 
   @Override
   public PolicyFinderResult findPolicy(EvaluationCtx context) {
+    PolicyCombiningAlgorithm combiningAlg = pdpService.getPolicyCombiningAlgorithmInstance();
     Map<URI, AbstractPolicy> policies = getPolicies();
     ArrayList<AbstractPolicy> selectedPolicies = new ArrayList<>();
     Set<Map.Entry<URI, AbstractPolicy>> entrySet = policies.entrySet();
@@ -88,7 +87,7 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
           // we found a match before, so this is an error
           ArrayList<String> code = new ArrayList<>();
           code.add(Status.STATUS_PROCESSING_ERROR);
-          Status status = new Status(code, "too many applicable " + "top-level policies");
+          Status status = new Status(code, "Too many applicable " + "top-level policies. Verify if PDP combining algorithm is set.");
           return new PolicyFinderResult(status);
         }
 
@@ -140,5 +139,4 @@ public class PDPPolicyFinderModule extends PolicyFinderModule {
   private AbstractPolicy loadPolicy(PDPPolicy pdpPolicy) throws PolicyParsingException {
     return PolicyFactory.getFactory().getXacmlPolicy(pdpPolicy.getContent(), finder);
   }
-
 }

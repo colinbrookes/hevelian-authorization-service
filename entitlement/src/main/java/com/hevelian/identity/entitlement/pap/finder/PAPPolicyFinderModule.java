@@ -1,4 +1,4 @@
-package com.hevelian.identity.entitlement.evaluator.finder;
+package com.hevelian.identity.entitlement.pap.finder;
 
 import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
 import com.hevelian.identity.entitlement.pdp.PolicyFactory;
@@ -16,14 +16,14 @@ import org.wso2.balana.finder.PolicyFinderResult;
 /**
  * Finds policy by PolicyId and verify it on target matching.
  */
-public class PAPFinderModule extends PolicyFinderModule {
+public class PAPPolicyFinderModule extends PolicyFinderModule {
 
-  private static final Log log = LogFactory.getLog(PAPFinderModule.class);
+  private static final Log log = LogFactory.getLog(PAPPolicyFinderModule.class);
   private PolicyFinder finder = null;
   @Getter
   private PAPPolicy papPolicy;
 
-  public PAPFinderModule(PAPPolicy papPolicy) {
+  public PAPPolicyFinderModule(PAPPolicy papPolicy) {
     this.papPolicy = papPolicy;
   }
 

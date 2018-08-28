@@ -58,18 +58,18 @@ public class PAPController {
     return papService.getPolicy(papPolicyIdDTO.getPolicyId());
   }
 
-  @RequestMapping(path = "/tryPolicy", method = RequestMethod.POST)
-  public PrimitiveResult<String> tryPolicy(@Valid @RequestBody TryPAPPolicyRequestDTO tryPAPPolicy)
+  @RequestMapping(path = "/tryPolicyByAttributes", method = RequestMethod.POST)
+  public PrimitiveResult<String> tryPolicy(@Valid @RequestBody EntitlementAttributesDTO attributes, @RequestParam String policyId)
       throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
     return new PrimitiveResult<>(
-        papService.tryPolicy(tryPAPPolicy.getPolicyId(),tryPAPPolicy.getSubject(),
-            tryPAPPolicy.getResource(),tryPAPPolicy.getAction(),tryPAPPolicy.getEnvironment()));
+        papService.tryPolicyByAttributes(policyId, attributes.getSubject(),
+            attributes.getResource(), attributes.getAction(), attributes.getEnvironment()));
   }
 
-  @RequestMapping(path = "/getPolicyDecision", method = RequestMethod.POST)
-  public PrimitiveResult<String> getPolicyDecision(@Valid @RequestBody EntitlementRequestDTO request,@RequestParam String policyId)
+  @RequestMapping(path = "/tryPolicy", method = RequestMethod.POST)
+  public PrimitiveResult<String> tryPolicy(@Valid @RequestBody EntitlementRequestDTO request, @RequestParam String policyId)
       throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
-    return new PrimitiveResult<>(papService.getPolicyDecision(policyId,request.getRequest()));
+    return new PrimitiveResult<>(papService.tryPolicyByAttributes(policyId, request.getRequest()));
   }
 
   // TODO Maybe this method should not return content. It can be returned by

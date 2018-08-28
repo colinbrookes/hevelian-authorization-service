@@ -1,7 +1,7 @@
-package com.hevelian.identity.entitlement.evaluator;
+package com.hevelian.identity.entitlement.pap;
 
 import com.hevelian.identity.entitlement.ctx.RequestCtxFactory2;
-import com.hevelian.identity.entitlement.evaluator.finder.PAPFinderModule;
+import com.hevelian.identity.entitlement.pap.finder.PAPPolicyFinderModule;
 import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
 import org.w3c.dom.Element;
 import org.wso2.balana.PDP;
@@ -46,7 +46,7 @@ public class EntitlementEngineForPAPPolicy {
 
     PolicyFinder policyFinder = new PolicyFinder();
     Set<PolicyFinderModule> policyFinderModule = new HashSet<>();
-    PAPFinderModule papFinderModule = new PAPFinderModule(papPolicy);
+    PAPPolicyFinderModule papFinderModule = new PAPPolicyFinderModule(papPolicy);
     policyFinderModule.add(papFinderModule);
     policyFinder.setModules(policyFinderModule);
 

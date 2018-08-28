@@ -5,7 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
-import com.hevelian.identity.entitlement.evaluator.EntitlementEngineForPAPPolicy;
+import com.hevelian.identity.entitlement.pap.EntitlementEngineForPAPPolicy;
 import com.hevelian.identity.entitlement.exc.PoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.exc.PolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.model.PolicyType;
@@ -113,8 +113,8 @@ public class PAPService {
     return policy;
   }
 
-  public String tryPolicy(String policyId, String subject, String resource,
-                          String action, String environment) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+  public String tryPolicyByAttributes(String policyId, String subject, String resource,
+                                      String action, String environment) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
     logAttributeRequest(subject, resource, action, environment);
     EntitlementEngineForPAPPolicy entitlementEngineForPAPPolicy = new EntitlementEngineForPAPPolicy(getPolicy(policyId));
     ResponseCtx response = entitlementEngineForPAPPolicy.evaluateAsResponseCtx(subject, resource, action, environment);
@@ -123,7 +123,7 @@ public class PAPService {
     return srtResponse;
   }
 
-  public String getPolicyDecision(String policyId, String request) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+  public String tryPolicyByAttributes(String policyId, String request) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
     if (log.isDebugEnabled()) {
       log.debug("XACML Request:\n" + request);
     }

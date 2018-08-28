@@ -84,9 +84,9 @@ public class PDPController {
   public PrimitiveResult<String> setPolicyCombiningAlgorithm(@ApiParam(value = "PDP policy combining algorithm", allowableValues = DenyOverridesPolicyAlg.algId + "," +
       PermitOverridesPolicyAlg.algId + "," + FirstApplicablePolicyAlg.algId + "," + PermitUnlessDenyPolicyAlg.algId + "," + DenyUnlessPermitPolicyAlg.algId + "," +
       OrderedPermitOverridesPolicyAlg.algId + "," + OrderedDenyOverridesPolicyAlg.algId + "," + OnlyOneApplicablePolicyAlg.algId + "," + "exception")
-      @RequestParam String algorithms) throws PDPPolicyCombiningAlgorithmNotSupportedException {
+      @RequestParam String algorithm) throws PDPPolicyCombiningAlgorithmNotSupportedException {
 
-    PDPConfig pdpConfig = pdpService.setPolicyCombiningAlgorithm(algorithms);
+    PDPConfig pdpConfig = pdpService.setPolicyCombiningAlgorithm(algorithm);
     return new PrimitiveResult<>(pdpConfig.getPolicyCombiningAlgorithm());
   }
 

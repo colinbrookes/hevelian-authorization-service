@@ -95,6 +95,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         // with wrong behavior.
         .contentNegotiationManager(contentNegotiationManager)
         .httpMessageConverters(requestMappingHandlerAdapter.getMessageConverters())
+        //Custom message interpolator to resolve Spring beans in messages.properties
         .messageInterpolator(messageInterpolator())
         // Set a list of error handlers for all application errors. Not
         // the best place, but this is all htat is provided out of the

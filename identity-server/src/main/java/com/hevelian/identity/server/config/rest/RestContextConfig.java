@@ -56,7 +56,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
   private RequestMappingHandlerAdapter requestMappingHandlerAdapter;
 
   @Autowired
-  ApplicationContext applicationContext;
+  private ApplicationContext applicationContext;
 
   @Override
   public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {

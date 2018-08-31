@@ -5,7 +5,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
-import com.hevelian.identity.entitlement.pap.EntitlementEngineForPAPPolicy;
+import com.hevelian.identity.entitlement.logging.EntitlementLogger;
+import com.hevelian.identity.entitlement.pap.PAPEntitlementEngine;
 import com.hevelian.identity.entitlement.exc.PoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.exc.PolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.model.PolicyType;
@@ -45,6 +46,8 @@ public class PAPService {
   private final PAPPolicyRepository papPolicyRepository;
   @Getter
   private final PDPPolicyRepository pdpPolicyRepository;
+
+  private static final EntitlementLogger eLog = new EntitlementLogger(log);
 
   public Page<PAPPolicy> searchPolicies(Specification<PAPPolicy> spec, PageRequest pageRequest) {
     return papPolicyRepository.findAll(spec, pageRequest);
@@ -115,21 +118,19 @@ public class PAPService {
 
   public String tryPolicyByAttributes(String policyId, String subject, String resource,
                                       String action, String environment) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
-    logAttributeRequest(subject, resource, action, environment);
-    EntitlementEngineForPAPPolicy entitlementEngineForPAPPolicy = new EntitlementEngineForPAPPolicy(getPolicy(policyId));
-    ResponseCtx response = entitlementEngineForPAPPolicy.evaluateAsResponseCtx(subject, resource, action, environment);
+    eLog.logAttributeRequest(subject, resource, action, environment);
+    PAPEntitlementEngine papEntitlementEngine = new PAPEntitlementEngine(getPolicy(policyId));
+    ResponseCtx response = papEntitlementEngine.evaluateAsResponseCtx(subject, resource, action, environment);
     String srtResponse = response.encode();
-    logResponse(srtResponse);
+    eLog.logResponse(srtResponse);
     return srtResponse;
   }
 
-  public String tryPolicyByAttributes(String policyId, String request) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
-    if (log.isDebugEnabled()) {
-      log.debug("XACML Request:\n" + request);
-    }
-    EntitlementEngineForPAPPolicy entitlementEngineForPAPPolicy = new EntitlementEngineForPAPPolicy(getPolicy(policyId));
+  public String tryPolicy(String policyId, String request) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+    PAPEntitlementEngine entitlementEngineForPAPPolicy = new PAPEntitlementEngine(getPolicy(policyId));
+    eLog.logRequest(request);
     String response = entitlementEngineForPAPPolicy.evaluate(request);
-    logResponse(response);
+    eLog.logResponse(response);
     return response;
   }
 
@@ -192,22 +193,6 @@ public class PAPService {
     public PAPPolicyAlreadyExistsException(String policyId) {
       super(String.format("Policy with id '%s' already exists in PAP.", policyId));
       this.policyId = policyId;
-    }
-  }
-//////////////////////
-  private void logResponse(String response) {
-    if (log.isDebugEnabled()) {
-      log.debug("XACML Response:\n" + response);
-    }
-  }
-
-  private void logAttributeRequest(String subject, String resource, String action,
-                                   String environment) {
-    if (log.isDebugEnabled()) {
-      StringBuilder sb = new StringBuilder("XACML Request Attributes:\n").append("Subject: ")
-          .append(subject).append("\nResource: ").append(resource).append("\nAction: ")
-          .append(action).append("\nEnvironment: ").append(environment);
-      log.debug(sb.toString());
     }
   }
 

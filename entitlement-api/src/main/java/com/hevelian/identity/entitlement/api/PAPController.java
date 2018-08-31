@@ -59,7 +59,7 @@ public class PAPController {
   }
 
   @RequestMapping(path = "/tryPolicyByAttributes", method = RequestMethod.POST)
-  public PrimitiveResult<String> tryPolicy(@Valid @RequestBody EntitlementAttributesDTO attributes, @RequestParam String policyId)
+  public PrimitiveResult<String> tryPolicyByAttributes(@Valid @RequestBody EntitlementAttributesDTO attributes, @RequestParam String policyId)
       throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
     return new PrimitiveResult<>(
         papService.tryPolicyByAttributes(policyId, attributes.getSubject(),
@@ -69,11 +69,11 @@ public class PAPController {
   @RequestMapping(path = "/tryPolicy", method = RequestMethod.POST)
   public PrimitiveResult<String> tryPolicy(@Valid @RequestBody EntitlementRequestDTO request, @RequestParam String policyId)
       throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
-    return new PrimitiveResult<>(papService.tryPolicyByAttributes(policyId, request.getRequest()));
+    return new PrimitiveResult<>(papService.tryPolicy(policyId, request.getRequest()));
   }
 
   // TODO Maybe this method should not return content. It can be returned by
-  // getPolicy or getPolicyContent
+  // getPolicyFinderResult or getPolicyContent
   @RequestMapping(path = "/getAllPolicies", method = RequestMethod.GET)
   public Page<PAPPolicy> getAllPolicies(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
                                         @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,

@@ -1,17 +1,18 @@
 package com.hevelian.identity.entitlement.api;
 
-import javax.validation.Valid;
+import com.hevelian.identity.core.api.PrimitiveResult;
+import com.hevelian.identity.entitlement.EntitlementService;
+import com.hevelian.identity.entitlement.api.dto.EntitlementAttributesDTO;
+import com.hevelian.identity.entitlement.api.dto.EntitlementRequestDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.wso2.balana.ParsingException;
-import com.hevelian.identity.core.api.PrimitiveResult;
-import com.hevelian.identity.entitlement.EntitlementService;
-import com.hevelian.identity.entitlement.api.dto.EntitlementAttributesDTO;
-import com.hevelian.identity.entitlement.api.dto.EntitlementRequestDTO;
-import lombok.RequiredArgsConstructor;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(path = "/EntitlementService")

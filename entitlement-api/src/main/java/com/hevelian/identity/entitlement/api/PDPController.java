@@ -83,7 +83,7 @@ public class PDPController {
   @RequestMapping(path = "/setPolicyCombiningAlgorithm", method = RequestMethod.POST)
   public PrimitiveResult<String> setPolicyCombiningAlgorithm(@ApiParam(value = "PDP policy combining algorithm", allowableValues = DenyOverridesPolicyAlg.algId + "," +
       PermitOverridesPolicyAlg.algId + "," + FirstApplicablePolicyAlg.algId + "," + PermitUnlessDenyPolicyAlg.algId + "," + DenyUnlessPermitPolicyAlg.algId + "," +
-      OrderedPermitOverridesPolicyAlg.algId + "," + OrderedDenyOverridesPolicyAlg.algId + "," + OnlyOneApplicablePolicyAlg.algId + "," + "exception")
+      OrderedPermitOverridesPolicyAlg.algId + "," + OrderedDenyOverridesPolicyAlg.algId + "," + OnlyOneApplicablePolicyAlg.algId)
       @RequestParam String algorithm) throws PDPPolicyCombiningAlgorithmNotSupportedException {
 
     PDPConfig pdpConfig = pdpService.setPolicyCombiningAlgorithm(algorithm);

@@ -2,10 +2,7 @@ package com.hevelian.identity.core;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
-import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
-import com.hevelian.identity.core.exc.IllegalEntityStateException;
-import com.hevelian.identity.core.exc.ReadImageException;
+import com.hevelian.identity.core.exc.*;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.core.model.UserInfo;
 import com.hevelian.identity.core.repository.TenantRepository;
@@ -22,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 @Service
@@ -80,8 +78,18 @@ public class TenantService {
     return tenant;
   }
 
+  public Tenant setTenantLogo(String tenantDomain, BufferedImage logo) throws TenantNotFoundByDomainException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try {
+      ImageIO.write(logo, "jpg", baos);
+    } catch (IOException e) {
+      throw new ImageReadException("Invalid image file!",e);
+    }
+    return setTenantLogo(tenantDomain, baos.toByteArray());
+  }
+
   @Transactional
-  public Tenant addTenantLogo(String tenantDomain, byte[] logo) throws TenantNotFoundByDomainException {
+  public Tenant setTenantLogo(String tenantDomain, byte[] logo) throws TenantNotFoundByDomainException {
     Tenant tenant = getTenant(tenantDomain);
     tenant.setLogo(logo);
     tenantRepository.save(tenant);
@@ -104,20 +112,26 @@ public class TenantService {
 
   public BufferedImage getTenantLogo(String tenantDomain)
       throws TenantNotFoundByDomainException, TenantHasNoLogoException {
-    Tenant tenant = getTenant(tenantDomain);
-    byte[] logo = tenant.getLogo();
+    byte[] logo = getTenantLogoBytes(tenantDomain);
     BufferedImage img = null;
     try {
       if (logo != null) {
         img = ImageIO.read(new ByteArrayInputStream(logo));
       }
     } catch (IOException e) {
-      throw new ReadImageException("Error reading image from byte array input stream.", e);
-    }
-    if (img == null) {
-      throw new TenantHasNoLogoException(tenant.getDomain());
+      throw new ImageRetrievalException("Error reading image from byte array input stream.", e);
     }
     return img;
+  }
+
+  public byte[] getTenantLogoBytes(String tenantDomain)
+      throws TenantNotFoundByDomainException, TenantHasNoLogoException {
+    Tenant tenant = getTenant(tenantDomain);
+    byte[] logo = tenant.getLogo();
+    if (logo == null) {
+      throw new TenantHasNoLogoException(tenantDomain);
+    }
+    return logo;
   }
 
   @Transactional

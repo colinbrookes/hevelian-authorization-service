@@ -24,11 +24,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.groups.Default;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 
 import static com.hevelian.identity.core.model.Tenant.FIELD_DATE_CREATED;
@@ -41,6 +44,7 @@ import static com.hevelian.identity.core.specification.EntitySpecification.TO;
 @Validated
 public class TenantController {
   private final String domain = "Tenant domain";
+  private final String tenantLogo = "Tenant logo";
   private final TenantService tenantService;
   private final PasswordEncoder passwordEncoder;
 
@@ -66,11 +70,20 @@ public class TenantController {
         tenantService.addTenant(tenant.toEntity(), tenant.getTenantAdmin().toEntity()).getDomain());
   }
 
+  @RequestMapping(path = "/setTenantLogoBytes", method = RequestMethod.POST)
+  public void setTenantLogoBytes(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain,
+                            @ApiParam(value = tenantLogo, required = true) @Logo @RequestParam MultipartFile logo)
+      throws TenantNotFoundByDomainException, IOException {
+    tenantService.setTenantLogo(tenantDomain, logo.getBytes());
+  }
+
   @RequestMapping(path = "/setTenantLogo", method = RequestMethod.POST)
   public void setTenantLogo(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain,
-                            @ApiParam(value = "Tenant logo", required = true) @Logo @RequestParam MultipartFile logo)
+                            @ApiParam(value = tenantLogo, required = true) @Logo @RequestParam MultipartFile logo)
       throws TenantNotFoundByDomainException, IOException {
-    tenantService.addTenantLogo(tenantDomain, logo.getBytes());
+    InputStream in = new ByteArrayInputStream(logo.getBytes());
+    BufferedImage bufferedImage = ImageIO.read(in);
+    tenantService.setTenantLogo(tenantDomain, bufferedImage);
   }
 
   @RequestMapping(path = "/getTenantLogo", method = RequestMethod.GET,
@@ -78,6 +91,12 @@ public class TenantController {
   public BufferedImage getTenantLogo(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain)
       throws TenantNotFoundByDomainException, TenantHasNoLogoException {
     return tenantService.getTenantLogo(tenantDomain);
+  }
+
+  @RequestMapping(path = "/getTenantLogoBytes", method = RequestMethod.GET)
+  public byte [] getTenantLogoBytes(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain)
+      throws TenantNotFoundByDomainException, TenantHasNoLogoException {
+    return tenantService.getTenantLogoBytes(tenantDomain);
   }
 
   @RequestMapping(path = "/updateTenant", method = RequestMethod.POST)

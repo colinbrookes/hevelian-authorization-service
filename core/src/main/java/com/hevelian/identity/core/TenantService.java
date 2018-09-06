@@ -41,6 +41,7 @@ public class TenantService {
   // Source:
   // http://www.mkyong.com/regular-expressions/domain-name-regular-expression-example/
   public static final String DOMAIN_REGEXP = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
+  public static final String IMAGE_STORAGE_FORMAT = "png";
   private final TenantRepository tenantRepository;
   private final TenantAdminService tenantAdminService;
   private final TenantLifecycleService tenantLifecycleService;
@@ -78,20 +79,29 @@ public class TenantService {
     return tenant;
   }
 
-  public Tenant setTenantLogo(String tenantDomain, BufferedImage logo) throws TenantNotFoundByDomainException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+  public Tenant setTenantLogo(String tenantDomain, byte[] logo) throws TenantNotFoundByDomainException, ImageReadException {
+    BufferedImage bufferedImage;
     try {
-      ImageIO.write(logo, "jpg", baos);
+      bufferedImage = ImageIO.read(new ByteArrayInputStream(logo));
     } catch (IOException e) {
-      throw new ImageReadException("Invalid image file!",e);
+      //we converting byte array into BufferedImage to verify that this is an image.
+      throw new ImageReadException("Invalid logo file. Can not convert byte array into a BufferedImage instance", e);
     }
-    return setTenantLogo(tenantDomain, baos.toByteArray());
+    return setTenantLogo(tenantDomain, bufferedImage);
+
   }
 
   @Transactional
-  public Tenant setTenantLogo(String tenantDomain, byte[] logo) throws TenantNotFoundByDomainException {
+  public Tenant setTenantLogo(String tenantDomain, BufferedImage logo) throws TenantNotFoundByDomainException, ImageReadException {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try {
+      ImageIO.write(logo, IMAGE_STORAGE_FORMAT, bos);
+    } catch (IOException e) {
+      throw new ImageReadException("Invalid logo file. Can not convert BufferedImage object to byte array", e);
+    }
+    byte[] logoBytes = bos.toByteArray();
     Tenant tenant = getTenant(tenantDomain);
-    tenant.setLogo(logo);
+    tenant.setLogo(logoBytes);
     tenantRepository.save(tenant);
     return tenant;
   }
@@ -112,7 +122,8 @@ public class TenantService {
 
   public BufferedImage getTenantLogo(String tenantDomain)
       throws TenantNotFoundByDomainException, TenantHasNoLogoException {
-    byte[] logo = getTenantLogoBytes(tenantDomain);
+    Tenant tenant = getTenant(tenantDomain);
+    byte[] logo = tenant.getLogo();
     BufferedImage img = null;
     try {
       if (logo != null) {
@@ -121,17 +132,10 @@ public class TenantService {
     } catch (IOException e) {
       throw new ImageRetrievalException("Error reading image from byte array input stream.", e);
     }
-    return img;
-  }
-
-  public byte[] getTenantLogoBytes(String tenantDomain)
-      throws TenantNotFoundByDomainException, TenantHasNoLogoException {
-    Tenant tenant = getTenant(tenantDomain);
-    byte[] logo = tenant.getLogo();
     if (logo == null) {
       throw new TenantHasNoLogoException(tenantDomain);
     }
-    return logo;
+    return img;
   }
 
   @Transactional

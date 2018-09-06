@@ -8,7 +8,7 @@
 	<name>${product.name} - Core Module</name>
 
 	<dependencies>
-		<!-- JPA Provider (EclipseLink). Simple persistence-api cannot be used 
+		<!-- JPA Provider (EclipseLink). Simple persistence-api cannot be used
 			as it has a weak Index support and no Multitenancy support. -->
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>

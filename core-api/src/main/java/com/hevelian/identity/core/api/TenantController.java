@@ -10,6 +10,7 @@ import com.hevelian.identity.core.api.dto.TenantRequestDTO;
 import com.hevelian.identity.core.api.pagination.PageRequestParameters;
 import com.hevelian.identity.core.api.pagination.PageRequestParametersReader;
 import com.hevelian.identity.core.api.validation.constraints.Logo;
+import com.hevelian.identity.core.exc.ImageReadException;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.core.pagination.PageRequestBuilder;
 import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
@@ -24,14 +25,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.groups.Default;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 
 import static com.hevelian.identity.core.model.Tenant.FIELD_DATE_CREATED;
@@ -44,7 +42,7 @@ import static com.hevelian.identity.core.specification.EntitySpecification.TO;
 @Validated
 public class TenantController {
   private final String domain = "Tenant domain";
-  private final String tenantLogo = "Tenant logo";
+  private final String tenantLogo = "Tenant logo. It is a 'image/png' or 'image/jpeg' file where width/height is not greater than 300 pixels";
   private final TenantService tenantService;
   private final PasswordEncoder passwordEncoder;
 
@@ -70,20 +68,15 @@ public class TenantController {
         tenantService.addTenant(tenant.toEntity(), tenant.getTenantAdmin().toEntity()).getDomain());
   }
 
-  @RequestMapping(path = "/setTenantLogoBytes", method = RequestMethod.POST)
-  public void setTenantLogoBytes(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain,
-                            @ApiParam(value = tenantLogo, required = true) @Logo @RequestParam MultipartFile logo)
-      throws TenantNotFoundByDomainException, IOException {
-    tenantService.setTenantLogo(tenantDomain, logo.getBytes());
-  }
-
   @RequestMapping(path = "/setTenantLogo", method = RequestMethod.POST)
   public void setTenantLogo(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain,
                             @ApiParam(value = tenantLogo, required = true) @Logo @RequestParam MultipartFile logo)
-      throws TenantNotFoundByDomainException, IOException {
-    InputStream in = new ByteArrayInputStream(logo.getBytes());
-    BufferedImage bufferedImage = ImageIO.read(in);
-    tenantService.setTenantLogo(tenantDomain, bufferedImage);
+      throws TenantNotFoundByDomainException, ImageReadException {
+    try {
+      tenantService.setTenantLogo(tenantDomain, logo.getBytes());
+    } catch (IOException e) {
+      throw new ImageReadException("Failed in converting MultipartFile to byte array.",e);
+    }
   }
 
   @RequestMapping(path = "/getTenantLogo", method = RequestMethod.GET,
@@ -91,12 +84,6 @@ public class TenantController {
   public BufferedImage getTenantLogo(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain)
       throws TenantNotFoundByDomainException, TenantHasNoLogoException {
     return tenantService.getTenantLogo(tenantDomain);
-  }
-
-  @RequestMapping(path = "/getTenantLogoBytes", method = RequestMethod.GET)
-  public byte [] getTenantLogoBytes(@ApiParam(value = domain, required = true) @RequestParam String tenantDomain)
-      throws TenantNotFoundByDomainException, TenantHasNoLogoException {
-    return tenantService.getTenantLogoBytes(tenantDomain);
   }
 
   @RequestMapping(path = "/updateTenant", method = RequestMethod.POST)

@@ -20,7 +20,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Logo {
 
-  String message() default "Invalid image file! Please, check upon the next requirements: file type is 'image/png' or 'image/jpeg'; width and height not exceed 300 pixels.";
+  String message() default "Invalid image file. Please, check that file has 'image/png' or 'image/jpeg' type and image width/height does not exceed 300 pixels.";
 
   Class<?>[] groups() default {};
 

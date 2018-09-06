@@ -13,15 +13,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 /**
- * Logo image should have the 'image/png' or 'image/jpeg' media types and parameters (width and height) must be less than or equal 300 pixels.
+ * Logo image should have the 'image/png' or 'image/jpeg' media types and parameters (width and height) must be less than or equal to 300 pixels.
  */
 public class LogoValidator implements ConstraintValidator<Logo, MultipartFile> {
 
   private static final int MAX_IMAGE_WIDTH = 300;
   private static final int MAX_IMAGE_HEIGHT = 300;
-
-  private String pngType = MediaType.IMAGE_PNG_VALUE;
-  private String jpegType = MediaType.IMAGE_JPEG_VALUE;
 
   @Override
   public void initialize(Logo annotation) {
@@ -31,7 +28,7 @@ public class LogoValidator implements ConstraintValidator<Logo, MultipartFile> {
   public boolean isValid(MultipartFile multipartFile, ConstraintValidatorContext context) {
     String contentType = multipartFile.getContentType();
     boolean isValid = false;
-    if (pngType.equals(contentType) || jpegType.equals(contentType)) {
+    if (MediaType.IMAGE_PNG_VALUE.equals(contentType) || MediaType.IMAGE_JPEG_VALUE.equals(contentType)) {
       BufferedImage bufferedImage;
       try {
         bufferedImage = ImageIO.read(new ByteArrayInputStream(multipartFile.getBytes()));

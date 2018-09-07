@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import com.hevelian.identity.entitlement.exc.PolicyRetrievalException;
 import com.hevelian.identity.entitlement.finder.ISPolicyFinderModule;
 import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.wso2.balana.AbstractPolicy;

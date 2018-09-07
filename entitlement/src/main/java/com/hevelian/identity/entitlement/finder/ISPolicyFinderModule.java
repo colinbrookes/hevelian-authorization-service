@@ -2,7 +2,7 @@ package com.hevelian.identity.entitlement.finder;
 
 import com.hevelian.identity.entitlement.exc.PolicyRetrievalException;
 import com.hevelian.identity.entitlement.pdp.PolicyFactory;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import lombok.extern.log4j.Log4j2;
 import org.wso2.balana.*;
 import org.wso2.balana.ctx.Status;

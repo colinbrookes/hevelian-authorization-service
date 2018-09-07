@@ -32,7 +32,9 @@ public class EntitlementEngine {
   /**
    * Initializes {@link PDP} instance.
    * <p>
-   * For correct work the 'evaluate' functions this object must be initialized, otherwise you will get {@link NullPointerException}.
+   * For a correct work of "evaluate" functions - this object must be initialized.
+   * No any checks are performed during evaluation for performance considerations, so if the
+   * object is not initialized - PDP instance might be null and a NullPointerException will occur.
    */
   public final void init() {
     PDPConfig pdpConfig = new PDPConfig(getAttributeFinder(), getPolicyFinder(), getResourceFinder(), isHandleMultipartRequest());

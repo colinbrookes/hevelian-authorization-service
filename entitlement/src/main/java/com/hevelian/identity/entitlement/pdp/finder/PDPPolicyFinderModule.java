@@ -4,7 +4,7 @@ import com.hevelian.identity.entitlement.PDPService;
 import com.hevelian.identity.entitlement.exc.PolicyRetrievalException;
 import com.hevelian.identity.entitlement.finder.ISPolicyFinderModule;
 import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import lombok.extern.log4j.Log4j2;
 import org.wso2.balana.AbstractPolicy;
 import org.wso2.balana.MatchResult;

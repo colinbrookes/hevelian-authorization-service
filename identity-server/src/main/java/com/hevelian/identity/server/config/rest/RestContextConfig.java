@@ -11,7 +11,7 @@ import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdE
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyCombiningAlgorithmNotSupportedException;
 import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import com.hevelian.identity.server.exhandler.ConstraintViolationExceptionHandler;
 import com.hevelian.identity.users.UserService.*;
 import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;

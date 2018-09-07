@@ -13,7 +13,7 @@ import com.hevelian.identity.entitlement.api.dto.*;
 import com.hevelian.identity.entitlement.model.PolicyType;
 import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
 import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

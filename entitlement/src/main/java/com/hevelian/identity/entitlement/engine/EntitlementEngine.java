@@ -69,7 +69,7 @@ public class EntitlementEngine {
    * @return true or false
    */
   protected boolean isHandleMultipartRequest() {
-    return false;
+    return true;
   }
 
   /**

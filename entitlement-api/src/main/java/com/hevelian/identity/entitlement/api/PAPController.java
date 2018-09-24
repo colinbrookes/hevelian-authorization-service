@@ -8,19 +8,18 @@ import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
 import com.hevelian.identity.entitlement.PAPService;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
-import com.hevelian.identity.entitlement.api.dto.PAPPolicyRequestDTO;
-import com.hevelian.identity.entitlement.api.dto.PolicyIdDTO;
-import com.hevelian.identity.entitlement.api.dto.PublishToPDPRequestDTO;
+import com.hevelian.identity.entitlement.api.dto.*;
 import com.hevelian.identity.entitlement.model.PolicyType;
 import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
 import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.wso2.balana.ParsingException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -58,8 +57,22 @@ public class PAPController {
     return papService.getPolicy(papPolicyIdDTO.getPolicyId());
   }
 
+  @RequestMapping(path = "/tryPolicyByAttributes", method = RequestMethod.POST)
+  public PrimitiveResult<String> tryPolicyByAttributes(@Valid @RequestBody EntitlementAttributesDTO attributes, @RequestParam String policyId)
+      throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+    return new PrimitiveResult<>(
+        papService.tryPolicyByAttributes(policyId, attributes.getSubject(),
+            attributes.getResource(), attributes.getAction(), attributes.getEnvironment()));
+  }
+
+  @RequestMapping(path = "/tryPolicy", method = RequestMethod.POST)
+  public PrimitiveResult<String> tryPolicy(@Valid @RequestBody EntitlementRequestDTO request, @RequestParam String policyId)
+      throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+    return new PrimitiveResult<>(papService.tryPolicy(policyId, request.getRequest()));
+  }
+
   // TODO Maybe this method should not return content. It can be returned by
-  // getPolicy or getPolicyContent
+  // getPolicyFinderResult or getPolicyContent
   @RequestMapping(path = "/getAllPolicies", method = RequestMethod.GET)
   public Page<PAPPolicy> getAllPolicies(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION,defaultValue = PageRequestParameters.DEFAULT_PAGE) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
                                         @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION,defaultValue = PageRequestParameters.DEFAULT_SIZE) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,

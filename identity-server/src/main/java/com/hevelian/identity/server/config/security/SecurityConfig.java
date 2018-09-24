@@ -1,5 +1,9 @@
 package com.hevelian.identity.server.config.security;
 
+import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
+import com.hevelian.identity.core.SystemRoles;
+import com.hevelian.identity.server.auth.providers.SuperAdminAuthenticationProvider;
+import com.hevelian.identity.server.auth.providers.UserAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +16,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfFilter;
-import com.allanditzel.springframework.security.web.csrf.CsrfTokenResponseHeaderBindingFilter;
-import com.hevelian.identity.core.SystemRoles;
-import com.hevelian.identity.server.auth.providers.SuperAdminAuthenticationProvider;
-import com.hevelian.identity.server.auth.providers.UserAuthenticationProvider;
 
 @Configuration
 @EnableWebSecurity
@@ -49,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     // Check whether it is possible to set login URL to Spring directly.
     http.authorizeRequests()
-        .antMatchers("/api/LoginService/login", "/api/v2/api-docs", "/api/swagger-ui.html",
+        .antMatchers("/api/csrf","/api/LoginService/login", "/api/v2/api-docs", "/api/swagger-ui.html",
             "/api/webjars/**", "/api/swagger-resources", "/api/swagger-resources/configuration/ui",
             "/api/swagger-resources/configuration/security")
         .permitAll().antMatchers("/console/*").hasAuthority(SystemRoles.SUPER_ADMIN).anyRequest()

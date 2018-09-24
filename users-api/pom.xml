@@ -23,7 +23,7 @@
 			<artifactId>spring-web</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
-	</dependencies>
+    </dependencies>
 	<parent>
 		<groupId>com.hevelian.identity</groupId>
 		<artifactId>identity-parent</artifactId>

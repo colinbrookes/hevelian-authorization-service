@@ -25,13 +25,13 @@ public class APIServletConfig {
   }
 
   /*
-  We use @Validated annotation in controllers to validate primitive request parameters.
-  Setting a custom parameters name discoverer lets retrieving API parameters name from
-  @RequestParam annotation if present. This validator will work with other layers as well,
-  because if @RequestParam annotation is not used - DefaultParameterNameDiscoverer is called,
-  which gets parameters names using reflection. But we are not planning to use @Validated
-  outside Spring Controllers.
-   */
+We use @Validated annotation in controllers to validate primitive request parameters.
+Setting a custom parameters name discoverer lets retrieving API parameters name from
+@RequestParam annotation if present. This validator will work with other layers as well,
+because if @RequestParam annotation is not used - DefaultParameterNameDiscoverer is called,
+which gets parameters names using reflection. But we are not planning to use @Validated
+outside Spring Controllers.
+ */
   @Bean
   public LocalValidatorFactoryBean getValidator() {
     LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();

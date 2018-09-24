@@ -48,71 +48,71 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 public class ConstraintViolationExceptionHandler extends ErrorMessageRestExceptionHandler<ConstraintViolationException> {
 
-    private ConversionService conversionService = new DefaultConversionService();
+  private ConversionService conversionService = new DefaultConversionService();
 
 
-    public ConstraintViolationExceptionHandler() {
-        super(UNPROCESSABLE_ENTITY);
+  public ConstraintViolationExceptionHandler() {
+    super(UNPROCESSABLE_ENTITY);
+  }
+
+  @Override
+  public ValidationErrorMessage createBody(ConstraintViolationException ex, HttpServletRequest req) {
+
+    ErrorMessage tmpl = super.createBody(ex, req);
+    ValidationErrorMessage msg = new ValidationErrorMessage(tmpl);
+
+    for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+      Node pathNode = findLastNonEmptyPathNode(violation.getPropertyPath());
+
+      if (pathNode != null && (pathNode.getKind() == ElementKind.PROPERTY || pathNode.getKind() == ElementKind.PARAMETER)) {
+        msg.addError(pathNode.getName(), convertToString(violation.getInvalidValue()), violation.getMessage());
+
+        // type level constraints etc.
+      } else {
+        msg.addError(violation.getMessage());
+      }
     }
+    return msg;
+  }
 
-    @Override
-    public ValidationErrorMessage createBody(ConstraintViolationException ex, HttpServletRequest req) {
+  /**
+   * Conversion service used for converting an invalid value to String.
+   * When no service provided, the {@link DefaultConversionService} is used.
+   *
+   * @param conversionService must not be null.
+   */
+  @Autowired(required=false)
+  public void setConversionService(ConversionService conversionService) {
+    Assert.notNull(conversionService, "conversionService must not be null");
+    this.conversionService = conversionService;
+  }
 
-        ErrorMessage tmpl = super.createBody(ex, req);
-        ValidationErrorMessage msg = new ValidationErrorMessage(tmpl);
+  private Node findLastNonEmptyPathNode(Path path) {
 
-        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
-            Node pathNode = findLastNonEmptyPathNode(violation.getPropertyPath());
-
-            if (pathNode != null && (pathNode.getKind() == ElementKind.PROPERTY || pathNode.getKind() == ElementKind.PARAMETER)) {
-                msg.addError(pathNode.getName(), convertToString(violation.getInvalidValue()), violation.getMessage());
-
-            // type level constraints etc.
-            } else {
-                msg.addError(violation.getMessage());
-            }
-        }
-        return msg;
+    List<Node> list = new ArrayList<>();
+    for (Iterator<Node> it = path.iterator(); it.hasNext(); ) {
+      list.add(it.next());
     }
-
-    /**
-     * Conversion service used for converting an invalid value to String.
-     * When no service provided, the {@link DefaultConversionService} is used.
-     *
-     * @param conversionService must not be null.
-     */
-    @Autowired(required=false)
-    public void setConversionService(ConversionService conversionService) {
-        Assert.notNull(conversionService, "conversionService must not be null");
-        this.conversionService = conversionService;
+    Collections.reverse(list);
+    for (Node node : list) {
+      if (!isEmpty(node.getName())) {
+        return node;
+      }
     }
+    return null;
+  }
 
-    private Node findLastNonEmptyPathNode(Path path) {
+  private String convertToString(Object invalidValue) {
 
-        List<Node> list = new ArrayList<>();
-        for (Iterator<Node> it = path.iterator(); it.hasNext(); ) {
-            list.add(it.next());
-        }
-        Collections.reverse(list);
-        for (Node node : list) {
-            if (!isEmpty(node.getName())) {
-                return node;
-            }
-        }
-        return null;
+    if (invalidValue == null) {
+      return null;
     }
+    try {
+      return conversionService.convert(invalidValue, String.class);
 
-    private String convertToString(Object invalidValue) {
-
-        if (invalidValue == null) {
-            return null;
-        }
-        try {
-            return conversionService.convert(invalidValue, String.class);
-
-        } catch (ConversionException ex) {
-            return invalidValue.toString();
-        }
+    } catch (ConversionException ex) {
+      return invalidValue.toString();
     }
+  }
 
 }

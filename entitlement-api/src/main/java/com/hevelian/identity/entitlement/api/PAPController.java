@@ -7,7 +7,6 @@ import com.hevelian.identity.core.pagination.PageRequestBuilder;
 import com.hevelian.identity.core.specification.EntitySpecificationsBuilder;
 import com.hevelian.identity.entitlement.PAPService;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
-import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.api.dto.PAPPolicyRequestDTO;
 import com.hevelian.identity.entitlement.api.dto.PolicyIdDTO;
@@ -36,7 +35,7 @@ public class PAPController {
 
   @RequestMapping(path = "/addPolicy", method = RequestMethod.POST)
   public PrimitiveResult<String> addPolicy(
-      @Valid @RequestBody PAPPolicyRequestDTO popPolicyRequestDTO) throws PolicyParsingException, PAPPolicyAlreadyExistsException {
+      @Valid @RequestBody PAPPolicyRequestDTO popPolicyRequestDTO) throws PolicyParsingException, PAPService.PAPPolicyAlreadyExistsException {
     PAPPolicy policy = papService.addPolicy(popPolicyRequestDTO.getContent());
     return new PrimitiveResult<>(policy.getPolicyId());
   }
@@ -62,10 +61,10 @@ public class PAPController {
   // TODO Maybe this method should not return content. It can be returned by
   // getPolicy or getPolicyContent
   @RequestMapping(path = "/getAllPolicies", method = RequestMethod.GET)
-  public Page<PAPPolicy> getAllPolicies(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
-                                        @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
+  public Page<PAPPolicy> getAllPolicies(@ApiParam(value = PageRequestParameters.PAGE_DESCRIPTION,defaultValue = PageRequestParameters.DEFAULT_PAGE) @RequestParam(name = PageRequestParameters.PAGE, required = false) @Min(PageRequestParameters.PAGE_MIN) Integer page,
+                                        @ApiParam(value = PageRequestParameters.SIZE_DESCRIPTION,defaultValue = PageRequestParameters.DEFAULT_SIZE) @RequestParam(name = PageRequestParameters.SIZE, required = false) @Min(PageRequestParameters.SIZE_MIN) Integer size,
                                         @ApiParam(value = PageRequestParameters.SORT_DESCRIPTION) @RequestParam(name = PageRequestParameters.SORT, required = false) String sort,
-                                        @ApiParam(value = "Policy id") @RequestParam(required = false) Integer policyId,
+                                        @ApiParam(value = "Policy id") @RequestParam(required = false) String policyId,
                                         @ApiParam(value = "Policy type") @RequestParam(required = false) PolicyType type) {
     PageRequestBuilder pageRequestBuilder = new PageRequestParametersReader().readParameters(page, size, sort);
     EntitySpecificationsBuilder<PAPPolicy> spec = new EntitySpecificationsBuilder<>();

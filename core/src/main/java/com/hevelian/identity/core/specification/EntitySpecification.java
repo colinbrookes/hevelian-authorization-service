@@ -54,27 +54,24 @@ public class EntitySpecification<T extends AbstractEntity> implements Specificat
         throw new NotImplementedException("Filter by type '" + javaType + "' not implemented.");
       }
     } else {
-        if (value instanceof LocalDateTime && root.get(getDateParameterName(parameter)) != null) {
-          String dateParameter = getDateParameterName(parameter);
+      if (value instanceof LocalDateTime && root.get(getDateParameterName(parameter)) != null) {
+        String dateParameter = getDateParameterName(parameter);
 
-          LocalDateTime localDateTime = (LocalDateTime) value;
-          ZonedDateTime zonedDateTime = ZonedDateTime.ofLocal(localDateTime, ZoneId.systemDefault(), ZoneOffset.UTC);
-          OffsetDateTime offsetDateTime = zonedDateTime.toOffsetDateTime();
-
-          if (parameter.endsWith(FROM)) {
-            predicate = builder.greaterThanOrEqualTo(root.get(dateParameter), offsetDateTime);
-          } else if (parameter.endsWith(TO)) {
-            predicate = builder.lessThan(root.get(dateParameter), offsetDateTime);
-          } else {
-            throw new NotImplementedException("Filter by name '" + parameter + "' not implemented.");
-          }
+        LocalDateTime localDateTime = (LocalDateTime) value;
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofLocal(localDateTime, ZoneId.systemDefault(), ZoneOffset.UTC);
+        OffsetDateTime offsetDateTime = zonedDateTime.toOffsetDateTime();
+        if (parameter.endsWith(FROM)) {
+          predicate = builder.greaterThanOrEqualTo(root.get(dateParameter), offsetDateTime);
+        } else {
+          predicate = builder.lessThan(root.get(dateParameter), offsetDateTime);
         }
+      }
     }
     return predicate;
   }
 
   @NotNull
-  private String getDateParameterName(String parameter){
+  private String getDateParameterName(String parameter) {
     int parameterLength = parameter.length();
     String parameterName;
     if (parameter.endsWith(FROM)) {
@@ -82,7 +79,7 @@ public class EntitySpecification<T extends AbstractEntity> implements Specificat
     } else if (parameter.endsWith(TO)) {
       parameterName = parameter.substring(0, parameterLength - LENGTH_STR_TO);
     } else {
-      throw new IllegalArgumentException("Incorrect date filter parameter");
+      throw new IllegalArgumentException("Filtering parameter name '" + parameter + "' is incorrect");
     }
     return parameterName;
   }

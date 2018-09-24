@@ -144,7 +144,7 @@ public class RequestParameterNameDiscoverer implements ParameterNameDiscoverer {
    * @param parameterAnnotations The {@link Annotation}'s to search.
    * @return {@link RequestParam} name/value or null
    */
-  
+
   private String findParameterName(Annotation[] parameterAnnotations) {
     for (Annotation paramAnnotation : parameterAnnotations) {
       if (RequestParam.class.getName().equals(paramAnnotation.annotationType()

@@ -2,9 +2,10 @@ package com.hevelian.identity.server.config.rest;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.hevelian.identity.core.TenantService;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
+import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistsException;
 import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
+import com.hevelian.identity.core.TenantService.TenantHasNoLogoException;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
@@ -22,12 +23,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.BufferedImageHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.accept.ContentNegotiationManager;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -42,6 +46,9 @@ import java.util.List;
 @Configuration
 @Import(SwaggerConfig.class)
 public class RestContextConfig extends WebMvcConfigurerAdapter {
+  //This number show a limit in bytes
+  private final int maxUploadFile = 1000000;
+
   @Autowired
   private ContentNegotiationManager contentNegotiationManager;
 
@@ -73,6 +80,7 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
     converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
     converters
         .add(new MappingJackson2XmlHttpMessageConverter(builder.createXmlMapper(true).build()));
+    converters.add(new BufferedImageHttpMessageConverter());
   }
 
   // See https://github.com/jirutka/spring-rest-exception-handler for more
@@ -97,7 +105,8 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(PDPPoliciesNotFoundByPolicyIdsException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(ParsingException.class, HttpStatus.UNPROCESSABLE_ENTITY)
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
-        .addErrorMessageHandler(TenantService.TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
+        .addErrorMessageHandler(TenantHasNoLogoException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(RoleAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(UserAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(PAPPolicyAlreadyExistsException.class, HttpStatus.CONFLICT)
@@ -142,4 +151,12 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
     registry.addResourceHandler("/webjars/**")
         .addResourceLocations("classpath:/META-INF/resources/webjars/");
   }
+
+  @Bean
+  public MultipartResolver multipartResolver() {
+    CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+    multipartResolver.setMaxUploadSize(maxUploadFile);
+    return multipartResolver;
+  }
+
 }

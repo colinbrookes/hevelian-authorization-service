@@ -2,9 +2,7 @@ package com.hevelian.identity.core;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
-import com.hevelian.identity.core.exc.EntityNotFoundByCriteriaException;
-import com.hevelian.identity.core.exc.IllegalEntityStateException;
+import com.hevelian.identity.core.exc.*;
 import com.hevelian.identity.core.model.Tenant;
 import com.hevelian.identity.core.model.UserInfo;
 import com.hevelian.identity.core.repository.TenantRepository;
@@ -17,6 +15,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 @Service
 @Transactional(readOnly = true)
@@ -37,6 +41,7 @@ public class TenantService {
   // Source:
   // http://www.mkyong.com/regular-expressions/domain-name-regular-expression-example/
   public static final String DOMAIN_REGEXP = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$";
+  public static final String IMAGE_STORAGE_FORMAT = "png";
   private final TenantRepository tenantRepository;
   private final TenantAdminService tenantAdminService;
   private final TenantLifecycleService tenantLifecycleService;
@@ -74,6 +79,33 @@ public class TenantService {
     return tenant;
   }
 
+  public Tenant setTenantLogo(String tenantDomain, byte[] logo) throws TenantNotFoundByDomainException, ImageReadException {
+    BufferedImage bufferedImage;
+    try {
+      bufferedImage = ImageIO.read(new ByteArrayInputStream(logo));
+    } catch (IOException e) {
+      //we converting byte array into BufferedImage to verify that this is an image.
+      throw new ImageReadException("Invalid logo file. Can not convert byte array into a BufferedImage instance", e);
+    }
+    return setTenantLogo(tenantDomain, bufferedImage);
+
+  }
+
+  @Transactional
+  public Tenant setTenantLogo(String tenantDomain, BufferedImage logo) throws TenantNotFoundByDomainException, ImageReadException {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try {
+      ImageIO.write(logo, IMAGE_STORAGE_FORMAT, bos);
+    } catch (IOException e) {
+      throw new ImageReadException("Invalid logo file. Can not convert BufferedImage object to byte array", e);
+    }
+    byte[] logoBytes = bos.toByteArray();
+    Tenant tenant = getTenant(tenantDomain);
+    tenant.setLogo(logoBytes);
+    tenantRepository.save(tenant);
+    return tenant;
+  }
+
   @Transactional
   public void deleteTenant(String tenantDomain) throws TenantNotFoundByDomainException {
     Tenant tenant = getTenant(tenantDomain);
@@ -86,6 +118,24 @@ public class TenantService {
     if (tenant == null)
       throw new TenantNotFoundByDomainException(tenantDomain);
     return tenant;
+  }
+
+  public BufferedImage getTenantLogo(String tenantDomain)
+      throws TenantNotFoundByDomainException, TenantHasNoLogoException {
+    Tenant tenant = getTenant(tenantDomain);
+    byte[] logo = tenant.getLogo();
+    BufferedImage img = null;
+    try {
+      if (logo != null) {
+        img = ImageIO.read(new ByteArrayInputStream(logo));
+      }
+    } catch (IOException e) {
+      throw new ImageRetrievalException("Error reading image from byte array input stream.", e);
+    }
+    if (logo == null) {
+      throw new TenantHasNoLogoException(tenantDomain);
+    }
+    return img;
   }
 
   @Transactional
@@ -151,6 +201,17 @@ public class TenantService {
     }
   }
 
+  @Getter
+  public static class TenantHasNoLogoException extends Exception {
+    private static final long serialVersionUID = -4846261273394679678L;
+    private final String domain;
+
+    public TenantHasNoLogoException(String domain) {
+      super(String.format("Tenant with domain '%s' has no logo.", domain));
+      this.domain = domain;
+    }
+  }
+
   public interface TenantAdminService {
     void createTenantAdmin(Tenant tenant, UserInfo tenantAdmin);
 
@@ -164,4 +225,5 @@ public class TenantService {
 
     void tenantDeleted(Tenant tenant);
   }
+
 }

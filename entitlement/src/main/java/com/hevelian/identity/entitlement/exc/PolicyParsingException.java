@@ -1,4 +1,4 @@
-package com.hevelian.identity.entitlement.pdp;
+package com.hevelian.identity.entitlement.exc;
 
 import org.wso2.balana.ParsingException;
 

@@ -7,15 +7,18 @@ import com.hevelian.identity.core.SystemRoles;
 import com.hevelian.identity.core.exc.EntityAlreadyExistsException;
 import com.hevelian.identity.entitlement.exc.PoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.exc.PolicyNotFoundByPolicyIdException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
+import com.hevelian.identity.entitlement.logging.EntitlementLogger;
 import com.hevelian.identity.entitlement.model.PolicyType;
 import com.hevelian.identity.entitlement.model.pap.PAPPolicy;
 import com.hevelian.identity.entitlement.model.pdp.PDPPolicy;
+import com.hevelian.identity.entitlement.pap.PAPEntitlementEngine;
 import com.hevelian.identity.entitlement.pdp.PolicyFactory;
-import com.hevelian.identity.entitlement.pdp.PolicyParsingException;
 import com.hevelian.identity.entitlement.repository.PAPPolicyRepository;
 import com.hevelian.identity.entitlement.repository.PDPPolicyRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +27,10 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wso2.balana.AbstractPolicy;
+import org.wso2.balana.ParsingException;
 import org.wso2.balana.Policy;
 import org.wso2.balana.PolicySet;
+import org.wso2.balana.ctx.ResponseCtx;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -35,11 +40,14 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @Secured(value = SystemRoles.TENANT_ADMIN)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Log4j2
 public class PAPService {
   @Getter
   private final PAPPolicyRepository papPolicyRepository;
   @Getter
   private final PDPPolicyRepository pdpPolicyRepository;
+
+  private static final EntitlementLogger eLog = new EntitlementLogger(log);
 
   public Page<PAPPolicy> searchPolicies(Specification<PAPPolicy> spec, PageRequest pageRequest) {
     return papPolicyRepository.findAll(spec, pageRequest);
@@ -106,6 +114,24 @@ public class PAPService {
     if (policy == null)
       throw new PAPPolicyNotFoundByPolicyIdException(policyId);
     return policy;
+  }
+
+  public String tryPolicyByAttributes(String policyId, String subject, String resource,
+                                      String action, String environment) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+    eLog.logAttributeRequest(subject, resource, action, environment);
+    PAPEntitlementEngine papEntitlementEngine = new PAPEntitlementEngine(getPolicy(policyId));
+    ResponseCtx response = papEntitlementEngine.evaluateAsResponseCtx(subject, resource, action, environment);
+    String srtResponse = response.encode();
+    eLog.logResponse(srtResponse);
+    return srtResponse;
+  }
+
+  public String tryPolicy(String policyId, String request) throws ParsingException, PAPPolicyNotFoundByPolicyIdException {
+    PAPEntitlementEngine entitlementEngineForPAPPolicy = new PAPEntitlementEngine(getPolicy(policyId));
+    eLog.logRequest(request);
+    String response = entitlementEngineForPAPPolicy.evaluate(request);
+    eLog.logResponse(response);
+    return response;
   }
 
   public Iterable<String> getPolicyVersions(String policyId) {

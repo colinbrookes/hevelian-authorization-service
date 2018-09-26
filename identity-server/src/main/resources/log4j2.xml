@@ -9,5 +9,11 @@
 		<Root level="info">
 			<AppenderRef ref="STDOUT" />
 		</Root>
+        <!-- Log exception to workaround bug https://github.com/springfox/springfox/issues/1120 or similar-->
+        <!-- TODO: re-check this in newer versions of swagger library -->
+		<Logger name="io.swagger.models.parameters.AbstractSerializableParameter" level="ERROR"
+				additivity="false">
+			<Appender-ref ref="STDOUT" level="ERROR" />
+		</Logger>
 	</Loggers>
 </Configuration>

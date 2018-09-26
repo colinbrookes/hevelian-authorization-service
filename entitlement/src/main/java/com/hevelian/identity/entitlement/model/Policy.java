@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 @MappedSuperclass
 @Getter
@@ -36,7 +37,7 @@ public abstract class Policy extends AbstractEntity {
   @Column(nullable = false)
   @Setter(AccessLevel.PROTECTED)
   @LastModifiedDate
-  private String lastModifiedDate;
+  private OffsetDateTime lastModifiedDate;
 
   @Column(nullable = false)
   @Setter(AccessLevel.PROTECTED)

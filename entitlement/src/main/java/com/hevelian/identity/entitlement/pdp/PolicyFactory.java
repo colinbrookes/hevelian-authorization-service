@@ -1,23 +1,21 @@
 package com.hevelian.identity.entitlement.pdp;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import com.hevelian.identity.core.exc.CoreRuntimeException;
+import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.wso2.balana.AbstractPolicy;
-import org.wso2.balana.DOMHelper;
-import org.wso2.balana.ParsingException;
-import org.wso2.balana.Policy;
-import org.wso2.balana.PolicySet;
+import org.wso2.balana.*;
 import org.wso2.balana.finder.PolicyFinder;
 import org.wso2.balana.utils.Utils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import com.hevelian.identity.core.exc.CoreRuntimeException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 
 public class PolicyFactory {
   private static volatile PolicyFactory policyFactory;

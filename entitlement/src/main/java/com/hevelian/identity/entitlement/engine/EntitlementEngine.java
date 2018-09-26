@@ -37,7 +37,7 @@ public class EntitlementEngine {
    * object is not initialized - PDP instance might be null and a NullPointerException will occur.
    */
   public final void init() {
-    PDPConfig pdpConfig = new PDPConfig(getAttributeFinder(), getPolicyFinder(), getResourceFinder(), isHandleMultipartRequest());
+    PDPConfig pdpConfig = new PDPConfig(getAttributeFinder(), getPolicyFinder(), getResourceFinder(), isHandleMultipleRequests());
     setPdp(new PDP(pdpConfig));
   }
 
@@ -68,8 +68,8 @@ public class EntitlementEngine {
    *
    * @return true or false
    */
-  protected boolean isHandleMultipartRequest() {
-    return false;
+  protected boolean isHandleMultipleRequests() {
+    return true;
   }
 
   /**

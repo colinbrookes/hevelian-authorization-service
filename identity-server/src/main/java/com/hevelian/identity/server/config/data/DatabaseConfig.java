@@ -4,13 +4,12 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import org.eclipse.persistence.config.EntityManagerProperties;
 import org.eclipse.persistence.config.PersistenceUnitProperties;
+import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,8 +25,14 @@ import com.hevelian.identity.server.tenants.resolvers.SessionTenantResolver;
 public class DatabaseConfig {
   @Bean
   public DataSource dataSource() {
-    EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-    return builder.setType(EmbeddedDatabaseType.H2).build();
+    // EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+    // return builder.setType(EmbeddedDatabaseType.H2).build();
+    JdbcDataSource ds = new JdbcDataSource();
+    ds.setURL("jdbc:h2:~/sample_to_delete6;AUTO_SERVER=TRUE");
+    ds.setUser("sa");
+    ds.setPassword("");
+
+    return ds;
   }
 
   @Bean

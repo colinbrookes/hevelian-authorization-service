@@ -4,17 +4,16 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.hevelian.identity.core.TenantService.TenantActiveAlreadyInStateException;
 import com.hevelian.identity.core.TenantService.TenantDomainAlreadyExistsException;
-import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.core.TenantService.TenantHasNoLogoException;
+import com.hevelian.identity.core.TenantService.TenantNotFoundByDomainException;
 import com.hevelian.identity.entitlement.PAPService.PAPPoliciesNotFoundByPolicyIdsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyAlreadyExistsException;
 import com.hevelian.identity.entitlement.PAPService.PAPPolicyNotFoundByPolicyIdException;
-import com.hevelian.identity.entitlement.PDPService.PDPPolicyCombiningAlgorithmNotSupportedException;
 import com.hevelian.identity.entitlement.PDPService.PDPPoliciesNotFoundByPolicyIdsException;
+import com.hevelian.identity.entitlement.PDPService.PDPPolicyCombiningAlgorithmNotSupportedException;
 import com.hevelian.identity.entitlement.PDPService.PDPPolicyNotFoundByPolicyIdException;
 import com.hevelian.identity.entitlement.exc.PolicyParsingException;
 import com.hevelian.identity.server.exhandler.ConstraintViolationExceptionHandler;
-import com.hevelian.identity.users.UserService.*;
 import cz.jirutka.spring.exhandler.RestHandlerExceptionResolver;
 import cz.jirutka.spring.exhandler.interpolators.MessageInterpolator;
 import cz.jirutka.spring.exhandler.interpolators.SpelMessageInterpolator;
@@ -120,14 +119,8 @@ public class RestContextConfig extends WebMvcConfigurerAdapter {
         .addErrorMessageHandler(TenantNotFoundByDomainException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(TenantDomainAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(TenantHasNoLogoException.class, HttpStatus.NOT_FOUND)
-        .addErrorMessageHandler(RoleAlreadyExistsException.class, HttpStatus.CONFLICT)
-        .addErrorMessageHandler(UserAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(PAPPolicyAlreadyExistsException.class, HttpStatus.CONFLICT)
         .addErrorMessageHandler(TenantActiveAlreadyInStateException.class, HttpStatus.CONFLICT)
-        .addErrorMessageHandler(UserNotFoundByNameException.class, HttpStatus.NOT_FOUND)
-        .addErrorMessageHandler(TenantAdminNotDeletableException.class, HttpStatus.CONFLICT)
-        .addErrorMessageHandler(RoleNotFoundByNameException.class, HttpStatus.NOT_FOUND)
-        .addErrorMessageHandler(RolesNotFoundByNameException.class, HttpStatus.NOT_FOUND)
         .addErrorMessageHandler(AccessDeniedException.class, HttpStatus.FORBIDDEN)
         // Add custom response for 500 error
         .addErrorMessageHandler(Exception.class, HttpStatus.INTERNAL_SERVER_ERROR).build();

@@ -124,12 +124,6 @@
 
 		<dependency>
 			<groupId>com.hevelian.identity</groupId>
-			<artifactId>users-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.hevelian.identity</groupId>
 			<artifactId>auth-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>

@@ -136,7 +136,6 @@
 		<module>core</module>
 		<module>core-api</module>
 		<module>users</module>
-		<module>users-api</module>
 		<module>auth</module>
 		<module>auth-api</module>
 		<module>entitlement</module>

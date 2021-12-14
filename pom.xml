@@ -48,7 +48,7 @@
 		<spring.version>4.3.4.RELEASE</spring.version>
 		<spring-security.version>4.1.1.RELEASE</spring-security.version>
 		<spring.data.version>1.10.2.RELEASE</spring.data.version>
-		<log4j.version>2.6.2</log4j.version>
+		<log4j.version>2.16.0</log4j.version>
 		<jackson.version>2.8.1</jackson.version>
 		<springfox.swagger.version>2.9.2</springfox.swagger.version>
 	</properties>
